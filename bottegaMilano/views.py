@@ -8,7 +8,6 @@ from .models import Venta
 from .forms import PdfForm
 import PyPDF2 # type: ignore
 
-from firebase_admin import firestore
 from django.utils.safestring import mark_safe
 import re
 
@@ -130,17 +129,6 @@ def save_DataPDF(request):
         else:
             totaleMacelleria += i['importo']
             continue
-
-
-    #db = firestore.client()
-    #for articolo in listaArti:
-    #    db.collection('venditaArticoli').add({
-    #        'data':dataDoc,
-    #        'nome':articolo.get('nome'),
-    #        'importo':articolo.get('importo'),
-    #        'unita':articolo.get('unita'),
-    #        'perTotal':articolo.get('perTotal'),
-    #        })
 
     return render(request, 'testoExtra.html',{'testo':listaArti,'orari':listaImporario,'tm':totaleMacelleria,'tc':totaleCotoleteria,'c':totaleContorni,
                                               'dfz':diferenza,'ti':totaleIncassi,'tip':totaleIncassiPre})
