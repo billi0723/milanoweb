@@ -1,0 +1,9 @@
+﻿{% block content %}
+<h3>PDF file merger</h3>
+<form method="post" enctype="multipart/form-data" action="">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="OK" />
+</form>
+<a href="{% url 'pdf_merge' %}">PDF file merger</a>
+{% endblock %}
