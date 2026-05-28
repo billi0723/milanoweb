@@ -28,7 +28,7 @@ app_name = 'bottegaMilano'
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('ventas/', formVenta, name='formulario'),
-    path('',listaVenta),
+    path('',caricarePdf),
     path('testoPdf/', caricarePdf, name='testoPdf'),
     path('save_DataPDF/', save_DataPDF, name='save_DataPDF'),
     #path('bottegaMilano/', include('bottegaMilano.urls')),
