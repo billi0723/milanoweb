@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path,include
-from bottegaMilano.views import listaVenta,formVenta,caricarePdf,save_DataPDF,buscar_y_procesar_pdfs
+from bottegaMilano.views import listaVenta,formVenta,caricarePdf,save_DataPDF,buscar_y_procesar_pdfs,lista_reportes
 
 
 # For static files such as images, CSS, and text is very important
@@ -32,5 +32,6 @@ urlpatterns = [
     path('testoPdf/', caricarePdf, name='testoPdf'),
     path('save_DataPDF/', save_DataPDF, name='save_DataPDF'),
     path('buscar_y_procesar_pdfs/', buscar_y_procesar_pdfs, name='buscar_y_procesar_pdfs'),
+    path('lista_reportes/', lista_reportes, name='lista_reportes'),
     #path('bottegaMilano/', include('bottegaMilano.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
