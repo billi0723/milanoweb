@@ -2,7 +2,7 @@
 from urllib import response
 from django.shortcuts import redirect, render
 from django.http import HttpResponse,JsonResponse
-from google.cloud.storage import bucket
+#from google.cloud.storage import bucket
 
 from bottegaMilano.forms import VentaForm
 from .models import Venta
