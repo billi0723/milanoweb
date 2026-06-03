@@ -168,13 +168,13 @@ def formVenta(request):
 
 def lista_reportes(request):
     #ruta_dir = os.path.join(os.getcwd())
-    ruta_dir = "C:\Users\billi\Desktop\Python App\DjangoWeb\report"
+    ruta_dir = "C:/Users/billi/Desktop/Python App/DjangoWeb/report"
     reportes = []
     if os.path.exists(ruta_dir):
         for archivo in os.listdir(ruta_dir):
             if archivo.endswith(('.pdf','.xls','.xlsx')):
                 reportes.append(archivo)
-    return render(request,reportes.html,{'reportes':reportes})
+    return render(request,'reportes.html',{'reportes':reportes})
 
 def caricarePdf(request):
     testo=""
