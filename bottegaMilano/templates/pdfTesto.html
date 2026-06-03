@@ -13,7 +13,6 @@
         <input type="submit" value="OK" />
     </form>
     {%if testo%}
-
     <form method="post" enctype="multipart/form-data" action="{%url 'save_DataPDF' %}">
         {% csrf_token %}
         <input type="submit" value="Save" />

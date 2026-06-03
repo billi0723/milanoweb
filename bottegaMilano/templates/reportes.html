@@ -1,0 +1,25 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <!--<pre style="color:darkslategrey; padding:40px; text-size-adjust:initial; white-space:pre-wrap; word-wrap:break-word">{{orari|safe}}</pre>-->
+    <p><strong>Data</strong>{{testo.0.data}}</p>
+    <div style="margin-bottom:20px;border-bottom:1px solid #ccc; padding-bottom:10px; display:flex; align-items:flex-start; flex-direction:row; gap:30px 20px">
+        <table style="width:45%">
+            <tr style="font-size:16px; font-family:'Californian FB'">
+                <td>Fascia Orario</td>
+                <td>Importo</td>
+            </tr>
+            {%for o in orari%}
+            <tr style="font-size: 16px; color: darkcyan; font-family: 'Californian FB'">
+                <td align="left">{{reportes}}</td>
+            </tr>
+            {%endfor%}
+        </table>
+    </div>
+</body>
+</html>
