@@ -197,7 +197,19 @@ cotoletteArticoli = ["Base + patatine","Manzo sportiva","La mortazza","Manzo bas
             "Con osso manzo","Manzo porcellina","Manzo mortazza","La porcellina","La raffinata","Manzo base","Manzo base + patate"]
 contorni = ["Patate Al Forno","Verdure","Riso"]
 
-def save_DataPDF(request):
+def lege_DataPDF(request):
+    testo=""
+    if request.method == 'POST':
+        form = PdfForm(request.POST, request.FILES)
+        if form.is_valid():
+             f = request.FILES['pdf_extra']
+             pdfFileObj = PyPDF2.PdfReader(f)
+             for page in pdfFileObj.pages:
+                testo += page.extract_text()+"\n"
+    else:
+        form = PdfForm()
+        return render(request, 'pdfTesto.html', {'form': form})
+
     listaTesto = []
     listaOrari = []
     listaTotale = []
@@ -207,7 +219,7 @@ def save_DataPDF(request):
     incasso = True
     datosArti = False
     datosOrari = False
-    testo = request.session.get('testo','')
+    #testo = request.session.get('testo','')
     fila = testo.splitlines()
     dataDoc = fila[0].split()[0]
     for orari in testo.splitlines():
@@ -231,25 +243,25 @@ def save_DataPDF(request):
     patronOrari = r"(?P<orari>\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2})\s*(?P<importeOra>[\d.,]+)"
     listaImporario = []
     for incassi in listaOrari:
-        o = re.search(patronOrari,incassi)
-        if o:
-            ora = o.groupdict()
-            ora['data']=dataDoc
-            listaImporario.append(ora)
-    
+         o = re.search(patronOrari,incassi)
+         if o:
+             ora = o.groupdict()
+             ora['data']=dataDoc
+             listaImporario.append(ora)
+     
     for linea in testo.splitlines():
         if re.search(r"ANALISI ARTICOLI?",linea,re.IGNORECASE):
-            datosArti = True
-            continue
+             datosArti = True
+             continue
         if re.search(r"^TOTALE\s+\d",linea,re.IGNORECASE):
-            listaTesto.append(linea)
-            datosArti = False
-            break
+             listaTesto.append(linea)
+             datosArti = False
+             break
         if re.search(r"ARTICOLI PER FASCIA DI SERVIZIO?",linea,re.IGNORECASE):
-            datosArti = False
-            break
+             datosArti = False
+             break
         if datosArti:
-            listaTesto.append(linea)
+             listaTesto.append(linea)
     
     patron = r"^(?P<nome>.+?)\s+(?P<importo>\d+,\d+)\s+(?P<unita>\d+(?:,\d+)?)\s+(?P<perTotal>\d+,\d+%)\s*,?$"
     listaArti = []
@@ -279,10 +291,3 @@ def save_DataPDF(request):
     totaleMacelleria += totaleContorni/2
     return render(request, 'testoExtra.html',{'testo':listaArti,'orari':listaImporario,'tm':totaleMacelleria,'tc':totaleCotoleteria,'c':totaleContorni,
                                               'dfz':diferenza,'ti':totaleIncassi,'tip':totaleIncassiPre})
-
-
-
-
-
-            
-
