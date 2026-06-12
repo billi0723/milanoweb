@@ -13,3 +13,6 @@ class PdfMergeForm(forms.Form):
 
 class PdfForm(forms.Form):
     pdf_extra = forms.FileField(label="Caricare Pdf",validators=[FileExtensionValidator(allowed_extensions=['pdf'])])
+
+class CalendarReport(forms.Form):
+    calendario = forms.DateField(widget=forms.DateInput({'type':'date','min':'2023-01-01','max':'2026-12-31'}))

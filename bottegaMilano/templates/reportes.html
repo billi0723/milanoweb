@@ -3,22 +3,217 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel=" stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Cabin+Sketch" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Dosis:800" rel="stylesheet">
     <title>Document</title>
+    <style type="text/css">
+
+        .heading {
+            color: white;
+            font-family: 'Sedgwick Ave Display', cursive;
+            font-size: 10vw;
+            letter-spacing: 20px;
+            color: rgb(0, 255, 170);
+            padding-top: 20px;
+            font-family: 'Cabin Sketch', cursive;
+        }
+
+        .data-rows {
+            padding-top: 10px;
+        }
+
+        .textfield-labels {
+            color: white;
+            font-weight: 600;
+        }
+
+        .textfield {
+            border: 5px solid black;
+        }
+
+        .signup-heading {
+            color: white;
+            font-family: 'Dosis', sans-serif;
+            letter-spacing: 20px;
+        }
+
+        .bored {
+            height: 250px;
+            max-width: 600px;
+        }
+
+        .font-icons {
+            color: white;
+            font-size: 50px;
+        }
+
+        .description {
+            color: white;
+            font-weight: 600;
+        }
+
+        .first-description {
+            padding: 10px;
+            border-radius: 20px;
+            border: 1px solid rgb(117, 19, 19);
+            animation-name: first-block;
+            animation-duration: 6s;
+            animation-iteration-count: infinite;
+            animation-direction: alternate;
+        }
+
+        .left-column {
+            padding: 20px;
+        }
+
+        ::-moz-placeholder {
+            text-align: center;
+        }
+
+        ::-webkit-input-placeholder {
+            text-align: center;
+        }
+
+        @keyframes first-block {
+            from {
+                background-color: rgba(255, 0, 0, 0);
+            }
+
+            to {
+                background-color: rgb(117, 19, 19);
+            }
+        }
+    </style>
 </head>
 <body>
-    <!--<pre style="color:darkslategrey; padding:40px; text-size-adjust:initial; white-space:pre-wrap; word-wrap:break-word">{{orari|safe}}</pre>-->
-    <p><strong>Data</strong>{{testo.0.data}}</p>
-    <div style="margin-bottom:20px;border-bottom:1px solid #ccc; padding-bottom:10px; display:flex; align-items:flex-start; flex-direction:row; gap:30px 20px">
-        <table style="width:45%">
+    {%load static%}
+    <div class="row p-3">
+        <center><img src="{%static 'img/bancofredo.jpg'%}" class="bored"><img src="{%static 'img/logo.png'%}" class="bored"><img src="{%static 'img/bisteche.jpg'%}" class="bored">
+                <p class="description">Bottega Dennys Rodriguez.</p>
+        </center>
+    </div>
+
+    <div style="margin-bottom:20px;border-bottom:1px solid #ccc; padding-bottom:10px; padding-left:200px ; display:flex; align-items:flex-start; flex-direction:row; gap:30px 20px">
+        <form method="post" enctype="multipart/form-data" action="">
+            <table style="width:45%">
+                <tr style="font-size:16px; font-family:'Californian FB'">
+                    <td>
+                        {% csrf_token %}
+                        {{ formCalendar.as_p }}
+                    </td>
+                    <td style="padding-left: 30px "><input type="submit" value="Ok" /></td>
+                </tr>
+            </table>
+        </form>
+    </div>
+    <div style="margin-bottom:24px; border-bottom:1px solid #ccc; padding-left:30px"><p><strong>Data  </strong>{{fecha}}</p></div>
+    <div style="margin-bottom:20px;border-bottom:1px solid #ccc; padding-left:30px; padding-bottom:10px; display:flex; align-items:flex-start; flex-direction:row; gap:30px 20px">
+        <table style="width:100%">
             <tr style="font-size:16px; font-family:'Californian FB'">
-                <td>Fascia Orario</td>
-                <td>Importo</td>
+                <td>BOTTEGA</td>
+                <td>TOTALE INCASSI</td>
+                <td>TOTALE INCASSI PRECEDENTE</td>
+                <td>DIFFERENZA % PERIODO PRECEDENTE</td>
             </tr>
-            {%for r in reportes%}
+            
             <tr style="font-size: 16px; color: darkcyan; font-family: 'Californian FB'">
-                <td align="left">{{r}}</td>
+                <td>Macelleria di Firenze</td>
+                <td align="left">{{respuesta.mf.inc}}</td>
+                <td align="left">{{respuesta.mf.pre}}</td>
+                <td align="left">{{respuesta.mf.dif}}</td>
+
             </tr>
-            {%endfor%}
+            <tr style="font-size: 16px; color: darkcyan; font-family: 'Californian FB'">
+                <td>Girarosto di Firenze</td>
+                <td align="left">{{respuesta.gf.inc}}</td>
+                <td align="left">{{respuesta.gf.pre}}</td>
+                <td align="left">{{respuesta.gf.dif}}</td>
+            </tr>
+            <tr style="font-size: 16px; color: darkcyan; font-family: 'Californian FB'">
+                <td>Ristaurante di Firenze</td>
+                <td align="left">{{respuesta.rf.inc}}</td>
+                <td align="left">{{respuesta.rf.pre}}</td>
+                <td align="left">{{respuesta.rf.dif}}</td>
+            </tr>
+
+            <tr style="font-size: 16px; color: darkcyan; font-family: 'Californian FB'">
+                <td>Macelleria di Roma</td>
+                <td align="left">{{respuesta.mr.inc}}</td>
+                <td align="left">{{respuesta.mr.pre}}</td>
+                <td align="left">{{respuesta.mr.dif}}</td>
+            </tr>
+            <tr style="font-size: 16px; color: darkcyan; font-family: 'Californian FB'">
+                <td>Girarosto di Roma</td>
+                <td align="left">{{respuesta.gr.inc}}</td>
+                <td align="left">{{respuesta.gr.pre}}</td>
+                <td align="left">{{respuesta.gr.dif}}</td>
+            </tr>
+
+            <tr style="font-size: 16px; color: darkcyan; font-family: 'Californian FB'">
+                <td>Macelleria di Milano</td>
+                <td align="left">{{respuesta.mm.inc}}</td>
+                <td align="left">{{respuesta.mm.pre}}</td>
+                <td align="left">{{respuesta.mm.dif}}</td>
+            </tr>
+            <tr style="font-size: 16px; color: darkcyan; font-family: 'Californian FB'">
+                <td>Girarosto di Milano</td>
+                <td align="left">{{respuesta.gm.inc}}</td>
+                <td align="left">{{respuesta.gm.pre}}</td>
+                <td align="left">{{respuesta.gm.dif}}</td>
+            </tr>
+
+            <tr style="font-size: 16px; color: darkcyan; font-family: 'Californian FB'">
+                <td>Macelleria di Torino</td>
+                <td align="left">{{respuesta.mt.inc}}</td>
+                <td align="left">{{respuesta.mt.pre}}</td>
+                <td align="left">{{respuesta.mt.dif}}</td>
+            </tr>
+            <tr style="font-size: 16px; color: darkcyan; font-family: 'Californian FB'">
+                <td>Girarosto di Torino</td>
+                <td align="left">{{respuesta.gt.inc}}</td>
+                <td align="left">{{respuesta.gt.pre}}</td>
+                <td align="left">{{respuesta.gt.dif}}</td>
+            </tr>
+            <tr style="font-size: 16px; color: darkcyan; font-family: 'Californian FB'">
+                <td>Hamburgueria di Torino</td>
+                <td align="left">{{respuesta.ht.inc}}</td>
+                <td align="left">{{respuesta.ht.pre}}</td>
+                <td align="left">{{respuesta.ht.dif}}</td>
+            </tr>
+            <tr style="font-size: 16px; color: darkcyan; font-family: 'Californian FB'">
+                <td>Macelleria di Bolzano</td>
+                <td align="left">{{respuesta.mb.inc}}</td>
+                <td align="left">{{respuesta.mb.pre}}</td>
+                <td align="left">{{respuesta.mb.dif}}</td>
+            </tr>
+            <tr style="font-size: 16px; color: darkcyan; font-family: 'Californian FB'">
+                <td>Girarosto di Bolzano</td>
+                <td align="left">{{respuesta.gb.inc}}</td>
+                <td align="left">{{respuesta.gb.pre}}</td>
+                <td align="left">{{respuesta.gb.dif}}</td>
+            </tr>
+            <tr style="font-size: 16px; color: darkcyan; font-family: 'Californian FB'">
+                <td>Macelleria di Albatros</td>
+                <td align="left">{{respuesta.ma.inc}}</td>
+                <td align="left">{{respuesta.ma.pre}}</td>
+                <td align="left">{{respuesta.ma.dif}}</td>
+            </tr>
+            <tr style="font-size: 16px; color: darkcyan; font-family: 'Californian FB'">
+                <td>Girarosto di Albatros</td>
+                <td align="left">{{respuesta.ga.inc}}</td>
+                <td align="left">{{respuesta.ga.pre}}</td>
+                <td align="left">{{respuesta.ga.dif}}</td>
+            </tr>
+            <tr style="font-size: 16px; color: darkcyan; font-family: 'Californian FB'">
+                <td>Gilly</td>
+                <td align="left">{{respuesta.mabg.inc}}</td>
+                <td align="left">{{respuesta.mabg.pre}}</td>
+                <td align="left">{{respuesta.mabg.dif}}</td>
+            </tr>
+            
         </table>
     </div>
 </body>

@@ -6,6 +6,11 @@
     <title>Document</title>
 </head>
 <body>
+    <form method="post" enctype="multipart/form-data" action="">
+        {% csrf_token %}
+        {{ formCalendar.as_p }}
+        <input type="submit" value="Ok" />
+    </form>
     <!--<pre style="color:darkslategrey; padding:40px; text-size-adjust:initial; white-space:pre-wrap; word-wrap:break-word">{{orari|safe}}</pre>-->
     <p><strong>Data</strong>{{testo.0.data}}</p>
     <div style="margin-bottom:20px;border-bottom:1px solid #ccc; padding-bottom:10px; display:flex; align-items:flex-start; flex-direction:row; gap:30px 20px">

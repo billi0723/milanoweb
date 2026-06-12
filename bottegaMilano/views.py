@@ -1,12 +1,16 @@
-﻿from ctypes.util import test
+﻿from asyncio.windows_events import NULL
+from ctypes.util import test
+import datetime
+from typing import Self
 from urllib import response
+from xml.etree.ElementInclude import include
 from django.shortcuts import redirect, render
 from django.http import HttpResponse,JsonResponse
 #from google.cloud.storage import bucket
 
-from bottegaMilano.forms import VentaForm
+#rfrom bottegaMilano.forms import VentaForm 
 from .models import Venta
-from .forms import PdfForm
+from .forms import PdfForm,CalendarReport, VentaForm
 import PyPDF2 # type: ignore
 import traceback
 
@@ -18,6 +22,8 @@ import imaplib
 import email
 from email.header import decode_header
 #from google.cloud import storage
+
+import calendar
 
 
 # Create your views here
@@ -37,6 +43,7 @@ def conectar_correo():
         print(f"Error al conectar al correo: {e}")
         traceback.print_exc()
     return None
+
 
 def extraer_texto_pdf(ruta_pdf):
     #Lee un archivo PDF local y extrae su texto."""
@@ -61,7 +68,7 @@ def buscar_y_procesar_pdfs(request):
         "MCB - GRILL - MCB":"b_m_bolzano/",
         "MCF - BISTECCA FIORENTINA":"b_r_firenze/",
         "MCM - GIRARROSTO - MCM":"b_g_milano/",
-        "MCM -  MACELLERIA - MCM":"b_m_milano/",
+        "MCM - MACELLERIA - MCM":"b_m_milano/",
         "MCT - GIRARROSTO - MCT":"b_g_torino/",
         "MCT - HAMBURGER - MCT":"b_h_torino/",
         "ABG - MACELLERIA - ABG":"b_m_abg/",
@@ -78,7 +85,9 @@ def buscar_y_procesar_pdfs(request):
     mail = conectar_correo()
     if not mail:
         return HttpResponse("no se conecto al email")
-    status, mensajes = mail.uid('search',None,"FROM reporting@mercatocentrale.it",'SINCE 18-Oct-2025','BEFORE 02-Jun-2026')
+
+    hoy = datetime.date.today().strftime('%DD/%mON%YYYY')
+    status, mensajes = mail.uid('search',None,"FROM reporting@mercatocentrale.it",f'AFTER: {hoy}')
     id_correos = mensajes[0].decode().split()
 
     if not id_correos:
@@ -149,23 +158,6 @@ def buscar_y_procesar_pdfs(request):
     mail.logout()
     return HttpResponse("pdf guardado")
 
-def listaVenta(request):
-    lst=Venta.objects.all().values("nomeProdutto","importo","unita","totPer")
-    response = ""
-    for i in lst:
-        response+=f"{i}<br>"
-    return HttpResponse(response)
-
-def formVenta(request):
-    if request.method == 'POST':
-        formV = VentaForm(request.POST)
-        if formV.is_valid():
-            formV.save()
-            return redirect('http://127.0.0.1:8000/')
-    else:
-        formV = VentaForm()
-        return render(request,'venta.html',{'formulario':formV})
-
 def lista_reportes(request):
     #ruta_dir = os.path.join(os.getcwd())
     ruta_dir = "C:/Users/billi/Desktop/Python App/DjangoWeb/report"
@@ -175,6 +167,181 @@ def lista_reportes(request):
             if archivo.endswith(('.pdf','.xls','.xlsx')):
                 reportes.append(archivo)
     return render(request,'reportes.html',{'reportes':reportes})
+
+def reportData(request):
+    respuesta = ""
+    listaBottega = {}
+    if request.method == 'POST':
+        formCalendar = CalendarReport(request.POST)
+        if formCalendar.is_valid():
+             fecha = request.POST.get('calendario')
+             fp = fecha
+             fecha = fecha.replace('/','-')
+             partes = fecha.split('-')
+             fecha = f"{partes[2]}-{partes[1]}-{partes[0]}"
+             ruta_dir = "C:/Users/billi/Desktop/Python App/DjangoWeb/report"
+             reportes = []
+             listaBottega['mb']= {}
+             listaBottega['gb']= {}
+             listaBottega['rf']= {}
+             listaBottega['mm']= {}
+             listaBottega['gm']= {}
+             listaBottega['gt']= {}
+             listaBottega['ht']= {}
+             listaBottega['mabg']= {}
+             listaBottega['mt']= {}
+             listaBottega['gf']= {}
+             listaBottega['mr']= {}
+             listaBottega['gr']= {}
+             listaBottega['mf']= {}
+             listaBottega['ga']= {}
+             listaBottega['ma']= {}
+            
+             if os.path.exists(ruta_dir):
+                 for archivo in os.listdir(ruta_dir):
+                     if archivo.endswith(('.pdf')):
+                         if fecha in archivo:
+
+                            if "90606" in archivo:
+                                pdfFileObj = PyPDF2.PdfReader(os.path.join(ruta_dir,archivo))
+                                for page in pdfFileObj.pages:
+                                    pdftemp = datosPDF(page.extract_text())
+                                    if pdftemp:
+                                        listaBottega['mb'] = pdftemp
+                            elif "90619" in archivo:
+                                pdfFileObj = PyPDF2.PdfReader(os.path.join(ruta_dir,archivo))
+                                for page in pdfFileObj.pages:
+                                    pdftemp = datosPDF(page.extract_text())
+                                    if pdftemp:
+                                        listaBottega['gb'] = pdftemp
+                            elif "90132" in archivo:
+                                pdfFileObj = PyPDF2.PdfReader(os.path.join(ruta_dir,archivo))
+                                for page in pdfFileObj.pages:
+                                    pdftemp = datosPDF(page.extract_text())
+                                    if pdftemp:
+                                        listaBottega['rf']=pdftemp
+                            elif "90516" in archivo:
+                                pdfFileObj = PyPDF2.PdfReader(os.path.join(ruta_dir,archivo))
+                                for page in pdfFileObj.pages:
+                                    pdftemp = datosPDF(page.extract_text())
+                                    if pdftemp:
+                                        listaBottega['mm']=pdftemp
+                            elif "90518" in archivo:
+                                pdfFileObj = PyPDF2.PdfReader(os.path.join(ruta_dir,archivo))
+                                for page in pdfFileObj.pages:
+                                    pdftemp = datosPDF(page.extract_text())
+                                    if pdftemp:
+                                        listaBottega['gm']=pdftemp
+                            elif "90410" in archivo:
+                                pdfFileObj = PyPDF2.PdfReader(os.path.join(ruta_dir,archivo))
+                                for page in pdfFileObj.pages:
+                                    pdftemp = datosPDF(page.extract_text())
+                                    if pdftemp:
+                                        listaBottega['gt']=pdftemp
+                            elif "90422" in archivo:
+                                pdfFileObj = PyPDF2.PdfReader(os.path.join(ruta_dir,archivo))
+                                for page in pdfFileObj.pages:
+                                    pdftemp = datosPDF(page.extract_text())
+                                    if pdftemp:
+                                        listaBottega['ht']=pdftemp
+                            elif "90313" in archivo:
+                                pdfFileObj = PyPDF2.PdfReader(os.path.join(ruta_dir,archivo))
+                                for page in pdfFileObj.pages:
+                                    pdftemp = datosPDF(page.extract_text())
+                                    if pdftemp:
+                                        listaBottega['mabg']=pdftemp
+                            elif "90411" in archivo:
+                                pdfFileObj = PyPDF2.PdfReader(os.path.join(ruta_dir,archivo))
+                                for page in pdfFileObj.pages:
+                                    pdftemp = datosPDF(page.extract_text())
+                                    if pdftemp:
+                                        listaBottega['mt']=pdftemp
+                            elif "90119" in archivo:
+                                pdfFileObj = PyPDF2.PdfReader(os.path.join(ruta_dir,archivo))
+                                for page in pdfFileObj.pages:
+                                    pdftemp = datosPDF(page.extract_text())
+                                    if pdftemp:
+                                        listaBottega['gf'] =pdftemp
+                            elif "90204" in archivo:
+                                pdfFileObj = PyPDF2.PdfReader(os.path.join(ruta_dir,archivo))
+                                for page in pdfFileObj.pages:
+                                    pdftemp = datosPDF(page.extract_text())
+                                    if pdftemp:
+                                        listaBottega["mr"] = pdftemp
+                            elif "90211" in archivo:
+                                pdfFileObj = PyPDF2.PdfReader(os.path.join(ruta_dir,archivo))
+                                for page in pdfFileObj.pages:
+                                    pdftemp = datosPDF(page.extract_text())
+                                    if pdftemp:
+                                        listaBottega['gr']=pdftemp
+                            elif "90101" in archivo:
+                                pdfFileObj = PyPDF2.PdfReader(os.path.join(ruta_dir,archivo))
+                                for page in pdfFileObj.pages:
+                                    pdftemp = datosPDF(page.extract_text())
+                                    if pdftemp:
+                                        listaBottega['mf']=pdftemp
+                            elif "1118" in archivo:
+                                pdfFileObj = PyPDF2.PdfReader(os.path.join(ruta_dir,archivo))
+                                for page in pdfFileObj.pages:
+                                    pdftemp = datosPDF(page.extract_text())
+                                    if pdftemp:
+                                        listaBottega['ga']=pdftemp
+                            elif "1131" in archivo:
+                                pdfFileObj = PyPDF2.PdfReader(os.path.join(ruta_dir,archivo))
+                                for page in pdfFileObj.pages:
+                                    pdftemp = datosPDF(page.extract_text())
+                                    if pdftemp:
+                                        listaBottega['ma']=pdftemp
+    else:
+        formCalendar = CalendarReport()
+        return render(request, 'reportes.html', {'formCalendar': formCalendar})
+
+    #patron = r"(\d{2}/\d{2}/\d{4})\s+(?:MACELLERIA|GIRARROSTO|GRILL|BISTECCA FIORENTINA)"
+    #partes = re.split(patron,respuesta)
+    #partes_limpias = [p.strip() for p in partes if p.strip()]
+    #print(listaBottega)
+    return render(request, 'reportes.html', {'respuesta': listaBottega,'fecha':fecha,'formCalendar':formCalendar})
+
+def datosPDF(texto):
+    listaIncaso = {}
+    totaleIncassi = ""
+    totaleIncassiPre = ""
+    diferenza = ""
+    incasso = True
+    
+    #testo = request.session.get('testo','')
+    #fila = testo.splitlines()
+    #dataDoc = fila[0].split()[0]
+    
+    for t in texto.splitlines():
+            if re.search(r"TOTALE INCASSI",t,re.IGNORECASE):
+                if incasso:
+                    totaleIncassi = t.split('TOTALE INCASSI')[1].strip()
+                    listaIncaso['inc']=totaleIncassi
+                    incasso = False
+                    continue
+                else:
+                    totaleIncassiPre = t.split('TOTALE INCASSI')[1].strip()
+                    listaIncaso['pre']=totaleIncassiPre
+                    continue
+            if re.search(r"DIFFERENZA",t,re.IGNORECASE):
+                diferenza = t.split('DIFFERENZA % PERIODO PRECEDENTE')[1].strip()
+                listaIncaso['dif']=diferenza
+                continue
+            if len(listaIncaso) == 3:
+                break
+    #if totaleIncassi.strip() != "":
+        #listaIncaso['inc']=totaleIncassi
+    #if totaleIncassiPre.strip() != "":
+        #listaIncaso['incpre']=totaleIncassiPre
+    #if diferenza.strip() != "":
+        #listaIncaso['dif']=diferenza
+    #listaIncaso = totaleIncassi+" "+totaleIncassiPre+" "+diferenza
+    #print(totaleIncassi+totaleIncassiPre+diferenza)
+    if listaIncaso:
+        print (listaIncaso)
+        print("Esto imprimi")
+    return listaIncaso
 
 def caricarePdf(request):
     testo=""
@@ -198,17 +365,28 @@ cotoletteArticoli = ["Base + patatine","Manzo sportiva","La mortazza","Manzo bas
 contorni = ["Patate Al Forno","Verdure","Riso"]
 
 def lege_DataPDF(request):
-    testo=""
+    respuesta = ""
     if request.method == 'POST':
         form = PdfForm(request.POST, request.FILES)
         if form.is_valid():
              f = request.FILES['pdf_extra']
              pdfFileObj = PyPDF2.PdfReader(f)
              for page in pdfFileObj.pages:
-                testo += page.extract_text()+"\n"
+                respuesta += page.extract_text()+"\n"
     else:
         form = PdfForm()
         return render(request, 'pdfTesto.html', {'form': form})
+    #testo=""
+    #if request.method == 'POST':
+    #   form = PdfForm(request.POST, request.FILES)
+    #    if form.is_valid():
+    #         f = request.FILES['pdf_extra']
+    #         pdfFileObj = PyPDF2.PdfReader(f)
+    #         for page in pdfFileObj.pages:
+    #            testo += page.extract_text()+"\n"
+    #else:
+    #    form = PdfForm()
+    #    return render(request, 'pdfTesto.html', {'form': form})
 
     listaTesto = []
     listaOrari = []
@@ -220,9 +398,9 @@ def lege_DataPDF(request):
     datosArti = False
     datosOrari = False
     #testo = request.session.get('testo','')
-    fila = testo.splitlines()
+    fila = respuesta.splitlines()
     dataDoc = fila[0].split()[0]
-    for orari in testo.splitlines():
+    for orari in respuesta.splitlines():
         if re.search(r"FASCIA ORARIA INCASSI BOTTEGA?",orari,re.IGNORECASE):
             datosOrari = True
             continue
@@ -249,7 +427,7 @@ def lege_DataPDF(request):
              ora['data']=dataDoc
              listaImporario.append(ora)
      
-    for linea in testo.splitlines():
+    for linea in respuesta.splitlines():
         if re.search(r"ANALISI ARTICOLI?",linea,re.IGNORECASE):
              datosArti = True
              continue
@@ -289,5 +467,22 @@ def lege_DataPDF(request):
 
     totaleCotoleteria += totaleContorni/2
     totaleMacelleria += totaleContorni/2
-    return render(request, 'testoExtra.html',{'testo':listaArti,'orari':listaImporario,'tm':totaleMacelleria,'tc':totaleCotoleteria,'c':totaleContorni,
+    return render(request, 'pdfTesto.html',{'testo':listaArti,'orari':listaImporario,'tm':totaleMacelleria,'tc':totaleCotoleteria,'c':totaleContorni,
                                               'dfz':diferenza,'ti':totaleIncassi,'tip':totaleIncassiPre})
+
+def listaVenta(request):
+    lst=Venta.objects.all().values("nomeProdutto","importo","unita","totPer")
+    response = ""
+    for i in lst:
+        response+=f"{i}<br>"
+    return HttpResponse(response)
+
+def formVenta(request):
+    if request.method == 'POST':
+        formV = VentaForm(request.POST)
+        if formV.is_valid():
+            formV.save()
+            return redirect('http://127.0.0.1:8000/')
+    else:
+        formV = VentaForm()
+        return render(request,'venta.html',{'formulario':formV})
