@@ -169,6 +169,7 @@ def lista_reportes(request):
 
 def reportData(request):
     respuesta = ""
+    fecha = ""
     listaBottega = {}
     if request.method == 'POST':
         formCalendar = CalendarReport(request.POST)

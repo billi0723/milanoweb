@@ -6,56 +6,69 @@
     <title>Document</title>
 </head>
 <body>
-    <form method="post" enctype="multipart/form-data" action="{%url 'lege_DataPDF' %}">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <input type="submit" value="Ok" />
-    </form>
-    {%if testo%}
+    <table style="width:45%">
+        <tr style="font-size:16px; font-family:'Californian FB'">
+            <td>
+                <form method="post" enctype="multipart/form-data" action="{%url 'lege_DataPDF' %}">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <input type="submit" value="Ok" />
+                </form>
+            </td>
+            <td>
+                <form method="post" enctype="multipart/form-data" action="{%url 'reportData' %}">
+                    {% csrf_token %}
+                    <input type="submit" value="Reporti" />
+                </form>
+            </td>
+        </tr>
 
-    <p><strong>Data</strong>{{testo.0.data}}</p>
-    <div style="margin-bottom:20px;border-bottom:1px solid #ccc; padding-bottom:10px; display:flex; align-items:flex-start; flex-direction:row; gap:30px 20px">
-        <table style="width:45%">
-            <tr style="font-size:16px; font-family:'Californian FB'">
-                <td>Articolo</td>
-                <td>Importo</td>
-                <td>Unita Vendute</td>
-                <td>% Totale</td>
-            </tr>
-            {%for articolo in testo%}
-            <tr style="font-size:14px; color:darkcyan; font-family:'Californian FB'">
-                <td align="left">{{articolo.nome}}</td>
-                <td align="center">{{articolo.importo}}</td>
-                <td align="center">{{articolo.unita}}</td>
-                <td align="center">{{articolo.perTotal}}</td>
-            </tr>
-            {%endfor%}
-            <tr style="font-size:18px; color:darkred; font-family:'Californian FB'"><td align="left">Totale in Macelleria: {{tm|floatformat:2}}</td></tr>
-            <tr style="font-size:18px; color:darkorange; font-family:'Californian FB'"><td align="left">Totale in Cotoleteria: {{tc|floatformat:2}}</td></tr>
-            <tr style="font-size:18px; color:darkgreen; font-family:'Californian FB'"><td align="left">Totale di Contorni: {{c|floatformat:2}}</td></tr>
-        </table>
-        <table style="width:45%">
-            <tr style="font-size:16px; font-family:'Californian FB'">
-                <td>Fascia Orario</td>
-                <td>Importo</td>
-            </tr>
-            {%for o in orari%}
-            <tr style="font-size: 16px; color: darkcyan; font-family: 'Californian FB'">
-                <td align="left">{{o.orari}}</td>
-                <td align="left">{{o.importeOra}}</td>
-            </tr>
-            {%endfor%}
-            <tr style="font-size: 16px; color: olive; font-family: 'Californian FB'">
-                <td align="left">{{dfz}}</td>
-            </tr>
-            <tr style="font-size: 16px; color: olive; font-family: 'Californian FB' ">
-                <td align="left">{{ti}}</td>
-            </tr>
-            <tr style="font-size: 16px; color: olive; font-family: 'Californian FB' ">
-                <td align="left">{{tip}}</td>
-            </tr>
-        </table>
-    </div>
-    {%endif%}
+    </table>        
+            {%if testo%}
+
+            <p><strong>Data</strong>{{testo.0.data}}</p>
+            <div style="margin-bottom:20px;border-bottom:1px solid #ccc; padding-bottom:10px; display:flex; align-items:flex-start; flex-direction:row; gap:30px 20px">
+                <table style="width:45%">
+                    <tr style="font-size:16px; font-family:'Californian FB'">
+                        <td>Articolo</td>
+                        <td>Importo</td>
+                        <td>Unita Vendute</td>
+                        <td>% Totale</td>
+                    </tr>
+                    {%for articolo in testo%}
+                    <tr style="font-size:14px; color:darkcyan; font-family:'Californian FB'">
+                        <td align="left">{{articolo.nome}}</td>
+                        <td align="center">{{articolo.importo}}</td>
+                        <td align="center">{{articolo.unita}}</td>
+                        <td align="center">{{articolo.perTotal}}</td>
+                    </tr>
+                    {%endfor%}
+                    <tr style="font-size:18px; color:darkred; font-family:'Californian FB'"><td align="left">Totale in Macelleria: {{tm|floatformat:2}}</td></tr>
+                    <tr style="font-size:18px; color:darkorange; font-family:'Californian FB'"><td align="left">Totale in Cotoleteria: {{tc|floatformat:2}}</td></tr>
+                    <tr style="font-size:18px; color:darkgreen; font-family:'Californian FB'"><td align="left">Totale di Contorni: {{c|floatformat:2}}</td></tr>
+                </table>
+                <table style="width:45%">
+                    <tr style="font-size:16px; font-family:'Californian FB'">
+                        <td>Fascia Orario</td>
+                        <td>Importo</td>
+                    </tr>
+                    {%for o in orari%}
+                    <tr style="font-size: 16px; color: darkcyan; font-family: 'Californian FB'">
+                        <td align="left">{{o.orari}}</td>
+                        <td align="left">{{o.importeOra}}</td>
+                    </tr>
+                    {%endfor%}
+                    <tr style="font-size: 16px; color: olive; font-family: 'Californian FB'">
+                        <td align="left">{{dfz}}</td>
+                    </tr>
+                    <tr style="font-size: 16px; color: olive; font-family: 'Californian FB' ">
+                        <td align="left">{{ti}}</td>
+                    </tr>
+                    <tr style="font-size: 16px; color: olive; font-family: 'Californian FB' ">
+                        <td align="left">{{tip}}</td>
+                    </tr>
+                </table>
+            </div>
+            {%endif%}
 </body>
 </html>
