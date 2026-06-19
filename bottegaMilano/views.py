@@ -394,7 +394,6 @@ def datosPDF(texto,fecha):
                       'ingressi':ingresi,
                       'data':dataDoc}]
     errors = client.insert_rows_json(table_id,row_to_insert)
-            
     return listaIncasi
 
 def caricarePdf(request):
