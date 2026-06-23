@@ -1,0 +1,132 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel=" stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Cabin+Sketch" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Dosis:800" rel="stylesheet">
+    <title>Document</title>
+    <style type="text/css">
+
+        .heading {
+            color: white;
+            font-family: 'Sedgwick Ave Display', cursive;
+            font-size: 10vw;
+            letter-spacing: 20px;
+            color: rgb(0, 255, 170);
+            padding-top: 20px;
+            font-family: 'Cabin Sketch', cursive;
+        }
+
+        .data-rows {
+            padding-top: 10px;
+        }
+
+        .textfield-labels {
+            color: white;
+            font-weight: 600;
+        }
+
+        .textfield {
+            border: 5px solid black;
+        }
+
+        .signup-heading {
+            color: white;
+            font-family: 'Dosis', sans-serif;
+            letter-spacing: 20px;
+        }
+
+        .bored {
+            height: 250px;
+            max-width: 600px;
+        }
+
+        .font-icons {
+            color: white;
+            font-size: 50px;
+        }
+
+        .description {
+            color: white;
+            font-weight: 600;
+        }
+
+        .first-description {
+            padding: 10px;
+            border-radius: 20px;
+            border: 1px solid rgb(117, 19, 19);
+            animation-name: first-block;
+            animation-duration: 6s;
+            animation-iteration-count: infinite;
+            animation-direction: alternate;
+        }
+
+        .left-column {
+            padding: 20px;
+        }
+
+        ::-moz-placeholder {
+            text-align: center;
+        }
+
+        ::-webkit-input-placeholder {
+            text-align: center;
+        }
+
+        @keyframes first-block {
+            from {
+                background-color: rgba(255, 0, 0, 0);
+            }
+
+            to {
+                background-color: rgb(117, 19, 19);
+            }
+        }
+    </style>
+</head>
+<body>
+    {%load static%}
+    <div class="row p-3">
+        <center><img src="{%static 'img/bancofredo.jpg'%}" class="bored"><img src="{%static 'img/logo.png'%}" class="bored"><img src="{%static 'img/bisteche.jpg'%}" class="bored">
+                <p class="description">Bottega Dennys Rodriguez.</p>
+        </center>
+    </div>
+
+    <div style="margin-bottom:20px;border-bottom:1px solid #ccc; padding-bottom:10px; padding-left:200px ; display:flex; align-items:flex-start; flex-direction:row; gap:30px 20px">
+        <form method="post" enctype="multipart/form-data" action="">
+            <table style="width:45%">
+                <tr style="font-size:16px; font-family:'Californian FB'">
+                    <td>
+                        
+                    </td>
+                </tr>
+            </table>
+        </form>
+    </div>
+    <div style="margin-bottom:24px; border-bottom:1px solid #ccc; padding-left:30px"><p><strong>Data  </strong>{{lista.data}}</p></div>
+    <div style="margin-bottom:20px;border-bottom:1px solid #ccc; padding-left:30px; padding-bottom:10px; display:flex; align-items:flex-start; flex-direction:row; gap:30px 20px">
+        <table style="width:auto">
+            <tr style="font-size:16px; font-family:'Californian FB'">
+                <td style="padding-right:60px">BOTTEGA</td>
+                <td style="padding-right:20px">TOTALE INCASSI</td>
+                <td style="padding-right:20px">TOTALE INCASSI PRECEDENTE</td>
+                <td style="padding-right:20px">DIFFERENZA % PERIODO PRECEDENTE</td>
+                <td>INGRESSI</td>
+            </tr>
+            {%for l in lista%}
+            <tr style="font-size: 16px; color: darkcyan; font-family: 'Californian FB'">
+                <td align="left">{{l.bottega}}</td>
+                <td align="left">{{l.incasso}}</td>
+                <td align="left">{{l.incassoPre}}</td>
+                <td align="left">{{l.diferenza}}</td>
+                <td align="left">{{l.ingressi}}</td>
+            </tr>
+            {%endfor%}
+        </table>
+    </div>
+</body>
+</html>

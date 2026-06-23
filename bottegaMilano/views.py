@@ -1,4 +1,8 @@
-﻿from ctypes.util import test
+﻿import os
+
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = r"C:\Users\billi\Desktop\llave\project-d83b9b63-299f-44e9-be1-b432cb598692.json"
+
+from ctypes.util import test
 import datetime
 from http import client
 from string import printable
@@ -14,40 +18,25 @@ from .models import Venta
 from .forms import PdfForm,CalendarReport, VentaForm
 import PyPDF2 # type: ignore
 import traceback
-
+#from google.cloud import storage
+#import calendar
 from django.utils.safestring import mark_safe
 import re
 
-import os
+
 import imaplib
 import email
 from email.header import decode_header
 from google.cloud import bigquery
-#from google.cloud import storage
-#import calendar
 
-
-# Create your views here
-#os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "C:\Users\billi\Desktop\llave\project-d83b9b63-299f-44e9-be1-b432cb598692.json"
 
 EMAIL_USUARIO = "reportmercato@gmail.com"
 EMAIL_CONTRASENA = os.environ.get('EMAIL_CONTRASENA')
 IMAP_SERVER = "imap.gmail.com"
 IMAP_PORT = 993
-
-def listaBDBottegue(request):
-    try:
-        lista = []
-        client = bigquery.Client()
-        query = "SELECT * FROM 'project-d83b9b63-299f-44e9-be1.bdBottegue.venditaGiorno' LIMIT 100"
-        query_job = client.query(query)
-
-        for row in query_job.result():
-            lista.append(row)
-        return render(request,'reportes.html',{'reportes':lista})
-    except Exception as e:
-        print ("Errore di conessione {e}")
-
+PROJECTO = "project-d83b9b63-299f-44e9-be1"
+DB = "bdBottegue"
+TABELA = "venditaGiorno"
 
 def conectar_correo():
     #Se conecta al servidor IMAP y selecciona la bandeja de entrada.
@@ -221,123 +210,138 @@ def reportData(request):
                          if fecha in archivo:
 
                             if "90606" in archivo:
+                                bottega = "Macelleria Bolzano"
                                 pdfFileObj = PyPDF2.PdfReader(os.path.join(ruta_dir,archivo))
                                 testo_completo = ""
                                 for page in pdfFileObj.pages:
                                     testo_completo += page.extract_text()
-                                pdftemp = datosPDF(testo_completo,fecha)
+                                pdftemp = datosPDF(testo_completo,fecha,bottega)
                                 if pdftemp:
                                     listaBottega['mb'] = pdftemp
                             elif "90619" in archivo:
+                                bottega = "Girarrosto Bolzano"
                                 pdfFileObj = PyPDF2.PdfReader(os.path.join(ruta_dir,archivo))
                                 testo_completo1 = ""
                                 for page in pdfFileObj.pages:
                                     testo_completo1 += page.extract_text()
-                                pdftemp = datosPDF(testo_completo1,fecha)
+                                pdftemp = datosPDF(testo_completo1,fecha, bottega)
                                 if pdftemp:
                                     listaBottega['gb'] = pdftemp
                             elif "90132" in archivo:
+                                bottega = "Ristorante Firenze"
                                 pdfFileObj = PyPDF2.PdfReader(os.path.join(ruta_dir,archivo))
                                 testo_completo2 = ""
                                 for page in pdfFileObj.pages:
                                     testo_completo2 += page.extract_text()
-                                pdftemp = datosPDF(testo_completo2,fecha)
+                                pdftemp = datosPDF(testo_completo2,fecha,bottega)
                                 if pdftemp:
                                     listaBottega['rf']=pdftemp
                             elif "90516" in archivo:
+                                bottega = "Macelleria Milano"
                                 pdfFileObj = PyPDF2.PdfReader(os.path.join(ruta_dir,archivo))
                                 testo_completo3 = ""
                                 for page in pdfFileObj.pages:
                                     testo_completo3 += page.extract_text()
-                                pdftemp = datosPDF(testo_completo3,fecha)
+                                pdftemp = datosPDF(testo_completo3,fecha,bottega)
                                 if pdftemp:
                                      listaBottega['mm']=pdftemp
                             elif "90518" in archivo:
+                                bottega = "Girarrosto Milano"
                                 pdfFileObj = PyPDF2.PdfReader(os.path.join(ruta_dir,archivo))
                                 testo_completo4 = ""
                                 for page in pdfFileObj.pages:
                                     testo_completo4 += page.extract_text()
-                                pdftemp = datosPDF(testo_completo4,fecha)
+                                pdftemp = datosPDF(testo_completo4,fecha,bottega)
                                 if pdftemp:
                                      listaBottega['gm']=pdftemp
                             elif "90410" in archivo:
+                                bottega = "Girarrosto Torino"
                                 pdfFileObj = PyPDF2.PdfReader(os.path.join(ruta_dir,archivo))
                                 testo_completo5 = ""
                                 for page in pdfFileObj.pages:
                                     testo_completo5 += page.extract_text()
-                                pdftemp = datosPDF(testo_completo5,fecha)
+                                pdftemp = datosPDF(testo_completo5,fecha,bottega)
                                 if pdftemp:
                                      listaBottega['gt']=pdftemp
                             elif "90422" in archivo:
+                                bottega = "Hamburguer Torino"
                                 pdfFileObj = PyPDF2.PdfReader(os.path.join(ruta_dir,archivo))
                                 testo_completo6 = ""
                                 for page in pdfFileObj.pages:
                                     testo_completo6 += page.extract_text()
-                                pdftemp = datosPDF(testo_completo6,fecha)
+                                pdftemp = datosPDF(testo_completo6,fecha,bottega)
                                 if pdftemp:
                                      listaBottega['ht']=pdftemp
                             elif "90313" in archivo:
+                                bottega = "Gilly"
                                 pdfFileObj = PyPDF2.PdfReader(os.path.join(ruta_dir,archivo))
                                 testo_completo7 = ""
                                 for page in pdfFileObj.pages:
                                     testo_completo7 += page.extract_text()
-                                pdftemp = datosPDF(testo_completo7,fecha)
+                                pdftemp = datosPDF(testo_completo7,fecha,bottega)
                                 if pdftemp:
                                      listaBottega['mabg']=pdftemp
                             elif "90411" in archivo:
+                                bottega = "Macelleria Torino"
                                 pdfFileObj = PyPDF2.PdfReader(os.path.join(ruta_dir,archivo))
                                 testo_completo8 = ""
                                 for page in pdfFileObj.pages:
                                     testo_completo8 += page.extract_text()
-                                pdftemp = datosPDF(testo_completo8,fecha)
+                                pdftemp = datosPDF(testo_completo8,fecha,bottega)
                                 if pdftemp:
                                      listaBottega['mt']=pdftemp
                             elif "90119" in archivo:
+                                bottega = "Girarrosto Firenze"
                                 pdfFileObj = PyPDF2.PdfReader(os.path.join(ruta_dir,archivo))
                                 testo_completo9 = ""
                                 for page in pdfFileObj.pages:
                                     testo_completo9 += page.extract_text()
-                                pdftemp = datosPDF(testo_completo9,fecha)
+                                pdftemp = datosPDF(testo_completo9,fecha,bottega)
                                 if pdftemp:
                                      listaBottega['gf'] =pdftemp
                             elif "90204" in archivo:
+                                bottega = "Macelleria Roma"
                                 pdfFileObj = PyPDF2.PdfReader(os.path.join(ruta_dir,archivo))
                                 testo_completo10 = ""
                                 for page in pdfFileObj.pages:
                                     testo_completo10 += page.extract_text()
-                                pdftemp = datosPDF(testo_completo10,fecha)
+                                pdftemp = datosPDF(testo_completo10,fecha,bottega)
                                 if pdftemp:
                                      listaBottega["mr"] = pdftemp
                             elif "90211" in archivo:
+                                bottega = "Girarrosto Roma"
                                 pdfFileObj = PyPDF2.PdfReader(os.path.join(ruta_dir,archivo))
                                 testo_completo11 = ""
                                 for page in pdfFileObj.pages:
                                     testo_completo11 += page.extract_text()
-                                pdftemp = datosPDF(testo_completo11,fecha)
+                                pdftemp = datosPDF(testo_completo11,fecha,bottega)
                                 if pdftemp:
                                      listaBottega['gr']=pdftemp
                             elif "90101" in archivo:
+                                bottega = "Macelleria Firenze"
                                 pdfFileObj = PyPDF2.PdfReader(os.path.join(ruta_dir,archivo))
                                 testo_completo12 = ""
                                 for page in pdfFileObj.pages:
                                     testo_completo12 += page.extract_text()
-                                pdftemp = datosPDF(testo_completo12,fecha)
+                                pdftemp = datosPDF(testo_completo12,fecha,bottega)
                                 if pdftemp:
                                      listaBottega['mf']=pdftemp
                             elif "1118" in archivo:
+                                bottega = "Girarrosto Albatroz"
                                 pdfFileObj = PyPDF2.PdfReader(os.path.join(ruta_dir,archivo))
                                 testo_completo13 = ""
                                 for page in pdfFileObj.pages:
                                     testo_completo13 += page.extract_text()
-                                pdftemp = datosPDF(testo_completo13,fecha)
+                                pdftemp = datosPDF(testo_completo13,fecha,bottega)
                                 if pdftemp:
                                      listaBottega['ga']=pdftemp
                             elif "1131" in archivo:
+                                bottega = "Macelleria Albatroz"
                                 pdfFileObj = PyPDF2.PdfReader(os.path.join(ruta_dir,archivo))
                                 testo_completo14 = ""
                                 for page in pdfFileObj.pages:
                                     testo_completo14 += page.extract_text()
-                                pdftemp = datosPDF(testo_completo14,fecha)
+                                pdftemp = datosPDF(testo_completo14,fecha,bottega)
                                 if pdftemp:
                                      listaBottega['ma']=pdftemp
     else:
@@ -350,7 +354,7 @@ def reportData(request):
     #print(listaBottega)
     return render(request, 'reportes.html', {'respuesta': listaBottega,'fecha':fecha,'formCalendar':formCalendar})
 
-def datosPDF(texto,fecha):
+def datosPDF(texto,fecha,bottega):
     dataDoc = fecha
     
     listaIncasi = {}
@@ -361,7 +365,7 @@ def datosPDF(texto,fecha):
     incasso = True
     
     #testo = request.session.get('testo','')
-    #fila = testo.splitlines()
+    #fila = texto.splitlines()
     #dataDoc = fila[0].split()[0]
     
     for t in texto.splitlines():
@@ -392,9 +396,32 @@ def datosPDF(texto,fecha):
                       'incassoPre':totaleIncassiPre,
                       'diferenza':diferenza,
                       'ingressi':ingresi,
-                      'data':dataDoc}]
+                      'data':dataDoc,
+                      'bottega':bottega}]
     errors = client.insert_rows_json(table_id,row_to_insert)
     return listaIncasi
+
+# -------------GET DE DATOS DE LA BD-----------------
+def listaBDBottegue(request):
+    lista = []
+    try:
+        client = bigquery.Client()
+        query = f"SELECT * FROM `{PROJECTO}.{DB}.{TABELA}` LIMIT 100"
+        query_job = client.query(query)
+
+        for row in query_job.result():
+            lista.append(dict(row))
+    except Exception as e:
+        print (f"Errore di conessione {e}")
+
+    return render(request,'listaBD.html',{'lista':lista})
+
+# ----------DELETE TABLA -------------------
+def eliminaData(request):
+    client = bigquery.Client()
+    sql = f"TRUNCATE TABLE `{PROJECTO}.{DB}.{TABELA}`"
+    client.query(sql).result()
+    return redirect('/listaBD/')
 
 def caricarePdf(request):
     testo=""
