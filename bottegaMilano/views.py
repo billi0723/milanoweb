@@ -1,6 +1,16 @@
 ﻿import os
+import tempfile
+import json
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = r"C:\Users\billi\Desktop\llave\project-d83b9b63-299f-44e9-be1-b432cb598692.json"
+json_content = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+if(json_content):
+    with tempfile.NamedTemporaryFile(mode="w",delete=False,suffix=".json") as temp_file:
+        temp_file.write(json_content)
+        temp_file_path = temp_file.name
+
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = temp_file_path
+
+#json_content = os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = r"C:\Users\billi\Desktop\llave\project-d83b9b63-299f-44e9-be1-b432cb598692.json"
 
 from ctypes.util import test
 import datetime
