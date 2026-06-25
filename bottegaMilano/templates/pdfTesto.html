@@ -21,6 +21,12 @@
                     <input type="submit" value="Reporti" />
                 </form>
             </td>
+            <td>
+                <form method="post" enctype="multipart/form-data" action="{%url 'listaBDBottegue' %}">
+                    {% csrf_token %}
+                    <input type="submit" value="Data Base" />
+                </form>
+            </td>
         </tr>
 
     </table>        
