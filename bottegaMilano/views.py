@@ -2,18 +2,18 @@
 import tempfile
 import json
 
-json_content = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+"""json_content = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
 if(json_content):
     with tempfile.NamedTemporaryFile(mode="w",delete=False,suffix=".json") as temp_file:
         temp_file.write(json_content)
         temp_file_path = temp_file.name
 
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = temp_file_path
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = temp_file_path"""
 
-#json_content = os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = r"C:\Users\billi\Desktop\llave\project-d83b9b63-299f-44e9-be1-b432cb598692.json"
 
 from ctypes.util import test
 import datetime
+import io
 from http import client
 from string import printable
 from typing import Self
@@ -38,6 +38,18 @@ import imaplib
 import email
 from email.header import decode_header
 from google.cloud import bigquery
+
+local_path = r"C:\Users\billi\Desktop\llave\project-d83b9b63-299f-44e9-be1-b432cb598692.json"
+
+if os.path.exists(local_path):
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"]=local_path
+else:
+    json_content = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+    if(json_content):
+        with tempfile.NamedTemporaryFile(mode="w",delete=False,suffix=".json") as temp_file:
+            temp_file.write(json_content)
+            temp_file_path = temp_file.name
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = temp_file_path
 
 
 EMAIL_USUARIO = "reportmercato@gmail.com"
@@ -77,24 +89,26 @@ def extraer_texto_pdf(ruta_pdf):
 def buscar_y_procesar_pdfs(request):
     #storage_client = storage.Client()
     #bucket_name = "storage_report_23"
-    
-    bottega_cartella = {
-        "MCR - GIRARROSTO - MCR":"b_g_roma/",
-        "MCB - GIRARROSTO - MCB":"b_g_bolzano/",
-        "MCB - GRILL - MCB":"b_m_bolzano/",
-        "MCF - BISTECCA FIORENTINA":"b_r_firenze/",
-        "MCM - GIRARROSTO - MCM":"b_g_milano/",
-        "MCM - MACELLERIA - MCM":"b_m_milano/",
-        "MCT - GIRARROSTO - MCT":"b_g_torino/",
-        "MCT - HAMBURGER - MCT":"b_h_torino/",
-        "ABG - MACELLERIA - ABG":"b_m_abg/",
-        "MCT - MACELLERIA - MCT":"b_m_torino/",
-        "MCF - GIRARROSTO - MCF":"b_g_firenze/",
-        "MCR - MACELLERIA - MCR":"b_m_roma/",
-        "MCF - MACELLERIA - MCF":"b_m_firenze/",
-        "ALB_F&B - ALBATROS - POLLO":"c_g_albatros/",
-        "ALB_F&B - ALBATROS - RISTO ALFREDO":"c_m_albatros/",
-    }
+    listaBottega = {}
+    file = []
+    listaBottega['mm']= {}
+    #bottega_cartella = {
+    #    "MCR - GIRARROSTO - MCR":"b_g_roma/",
+    #    "MCB - GIRARROSTO - MCB":"b_g_bolzano/",
+    #    "MCB - GRILL - MCB":"b_m_bolzano/",
+    #    "MCF - BISTECCA FIORENTINA":"b_r_firenze/",
+    #    "MCM - GIRARROSTO - MCM":"b_g_milano/",
+    #    "MCM - MACELLERIA - MCM":"b_m_milano/",
+    #    "MCT - GIRARROSTO - MCT":"b_g_torino/",
+    #    "MCT - HAMBURGER - MCT":"b_h_torino/",
+    #    "ABG - MACELLERIA - ABG":"b_m_abg/",
+    #    "MCT - MACELLERIA - MCT":"b_m_torino/",
+    #    "MCF - GIRARROSTO - MCF":"b_g_firenze/",
+    #    "MCR - MACELLERIA - MCR":"b_m_roma/",
+    #    "MCF - MACELLERIA - MCF":"b_m_firenze/",
+    #    "ALB_F&B - ALBATROS - POLLO":"c_g_albatros/",
+    #    "ALB_F&B - ALBATROS - RISTO ALFREDO":"c_m_albatros/",
+    #}
 
     listaTitolosPdf=[]
     listaTitoloEmail=[]
@@ -102,10 +116,11 @@ def buscar_y_procesar_pdfs(request):
     if not mail:
         return HttpResponse("no se conecto al email")
 
-    
-    status, mensajes = mail.uid('search',None,'FROM','reporting@mercatocentrale.it','SINCE','01-Jun-2026','BEFORE','16-Jun-2026' )
+    hoy = datetime.date.today()
+    fecha = hoy.strftime('%d-%b-%Y')
+    #status, mensajes = mail.uid('search',None,'FROM','reporting@mercatocentrale.it','SINCE','30-May-2026','BEFORE','31-May-2026' )
+    status, mensajes = mail.uid('search',None,'FROM','reporting@mercatocentrale.it','ON',fecha)
     id_correos = mensajes[0].decode().split()
-
     if not id_correos:
         print("No se encontraron correos nuevos sin leer.")
         return HttpResponse("no hay correos")
@@ -122,16 +137,16 @@ def buscar_y_procesar_pdfs(request):
             msg = email.message_from_bytes(data[0][1])
             if msg["Subject"]:
                 asunto, codificacion = decode_header(msg["Subject"])[0]
-            ruta_cartella = 'b_defecto'
-            for clave in bottega_cartella:
-                if isinstance(asunto, bytes):
-                    asunto = asunto.decode(codificacion or "utf-8")
-                if clave in asunto:
-                    ruta_cartella = bottega_cartella[clave]
-                    break
+            #ruta_cartella = 'b_defecto'
+            #for clave in bottega_cartella:
+            #    if isinstance(asunto, bytes):
+            #        asunto = asunto.decode(codificacion or "utf-8")
+            #    if clave in asunto:
+            #        ruta_cartella = bottega_cartella[clave]
+            #        break
 
         # Revisar las partes del correo para buscar archivos adjuntos
-        file = []
+        
         existepdf = False
         for parte in msg.walk():
             # Si el tipo de contenido no es un adjunto, lo saltamos
@@ -149,7 +164,20 @@ def buscar_y_procesar_pdfs(request):
 
             # Verificar si el archivo es un PDF
             if nombre_archivo.lower().endswith('.pdf'):
+                contenido = parte.get_payload(decode=True)
+                file_memoria = io.BytesIO(contenido)
                 file.append(nombre_archivo)
+
+                if "90516" in nombre_archivo:
+                                bottega = "Macelleria Milano"
+                                pdfFileObj = PyPDF2.PdfReader(file_memoria)
+                                testo_completo = ""
+                                for page in pdfFileObj.pages:
+                                    testo_completo += page.extract_text()
+                                pdftemp = datosPDF(testo_completo,fecha,bottega)
+                                if pdftemp:
+                                    listaBottega['mm']=pdftemp
+
                 existepdf = True
             if not existepdf:
                 if nombre_archivo.lower().endswith(('.xls','xlsx')):
@@ -161,10 +189,10 @@ def buscar_y_procesar_pdfs(request):
 
 
             # Descargar y guardar temporalmente el archivo PDF
-            ruta_guardado = os.path.join(os.getcwd(), nombre_archivo)
-            with open(ruta_guardado, 'wb') as f:
-                f.write(parte.get_payload(decode=True))
-                print(f"Archivo guardado en: {ruta_guardado}")
+            #ruta_guardado = os.path.join(os.getcwd(), nombre_archivo)
+            #with open(ruta_guardado, 'wb') as f:
+            #    f.write(parte.get_payload(decode=True))
+            #    print(f"Archivo guardado en: {ruta_guardado}")
 
         # PASO EXTRA: Leer el PDF ya descargado
         #extraer_texto_pdf(ruta_guardado)
@@ -172,7 +200,8 @@ def buscar_y_procesar_pdfs(request):
     # Cerrar sesión de manera segura
     mail.close()
     mail.logout()
-    return HttpResponse("pdf guardado")
+    return render(request,'correos.html',{'correos':listaBottega})
+    #return HttpResponse("pdf guardado")
 
 def lista_reportes(request):
     #ruta_dir = os.path.join(os.getcwd())
@@ -433,7 +462,9 @@ def eliminaData(request):
     client.query(sql).result()
     return redirect('/listaBD/')
 
+#-------------DOCUMENTO DE MILANO----------------------------
 def caricarePdf(request):
+
     testo=""
     if request.method == 'POST':
         form = PdfForm(request.POST, request.FILES)
@@ -456,7 +487,69 @@ contorni = ["Patate Al Forno","Verdure","Riso"]
 
 def lege_DataPDF(request):
     respuesta = ""
-    if request.method == 'POST':
+    mail = conectar_correo()
+    if not mail:
+        return HttpResponse("non esiste conessione col email")
+
+    hoy = datetime.date.today()
+    fecha = hoy.strftime('%d-%b-%Y')
+    
+    status, mensajes = mail.uid('search',None,'FROM','reporting@mercatocentrale.it','ON',fecha)
+    id_correos = mensajes[0].decode().split()
+    if not id_correos:
+        print("No se encontraron correos nuevos sin leer.")
+        return HttpResponse("non ci sono emails")
+    
+    for correos in id_correos:
+        asunto="vacio"
+        msg="vacio"
+         # Obtener el contenido del correo
+        status, data = mail.uid('fetch',correos, '(RFC822)')
+        if data and isinstance(data[0], tuple):
+            # Parsear el contenido del correo
+            msg = email.message_from_bytes(data[0][1])
+            if msg["Subject"]:
+                asunto, codificacion = decode_header(msg["Subject"])[0]
+
+        # Revisar las partes del correo para buscar archivos adjuntos
+        
+        existepdf = False
+        for parte in msg.walk():
+            # Si el tipo de contenido no es un adjunto, lo saltamos
+            if parte.get_content_maintype() == 'multipart':
+                continue
+            if parte.get('Content-Disposition') is None:
+                continue
+            nombre_archivo = parte.get_filename()
+
+            if nombre_archivo:
+            # Decodificar el nombre del archivo si tiene caracteres raros
+                nombre_archivo_decodificado, cod = decode_header(nombre_archivo)[0]
+            if isinstance(nombre_archivo_decodificado, bytes):
+                nombre_archivo = nombre_archivo_decodificado.decode(cod or "utf-8")
+
+            # Verificar si el archivo es un PDF
+            if nombre_archivo.lower().endswith('.pdf'):
+                contenido = parte.get_payload(decode=True)
+                file_memoria = io.BytesIO(contenido)
+
+                if "90516" in nombre_archivo:
+                                bottega = "Macelleria Milano"
+                                pdfFileObj = PyPDF2.PdfReader(file_memoria)
+                                testo_completo = ""
+                                for page in pdfFileObj.pages:
+                                    respuesta += page.extract_text()
+                existepdf = True
+            if not existepdf:
+                if nombre_archivo.lower().endswith(('.xls','xlsx')):
+                    return HttpResponse("non esiste il pdf")
+
+    # Cerrar sesión de manera segura
+    mail.close()
+    mail.logout()
+
+    
+    """if request.method == 'POST':
         form = PdfForm(request.POST, request.FILES)
         if form.is_valid():
              f = request.FILES['pdf_extra']
@@ -465,7 +558,7 @@ def lege_DataPDF(request):
                 respuesta += page.extract_text()+"\n"
     else:
         form = PdfForm()
-        return render(request, 'pdfTesto.html', {'form': form})
+        return render(request, 'pdfTesto.html', {'form': form})"""
     #testo=""
     #if request.method == 'POST':
     #   form = PdfForm(request.POST, request.FILES)
@@ -557,7 +650,11 @@ def lege_DataPDF(request):
 
     totaleCotoleteria += totaleContorni/2
     totaleMacelleria += totaleContorni/2
-    return render(request, 'pdfTesto.html',{'testo':listaArti,'orari':listaImporario,'tm':totaleMacelleria,'tc':totaleCotoleteria,'c':totaleContorni,
+
+    tcper = totaleCotoleteria + totaleCotoleteria*10/100
+    tmper = totaleMacelleria + totaleMacelleria*10/100
+
+    return render(request, 'pdfTesto.html',{'testo':listaArti,'orari':listaImporario,'tm':tmper,'tc':tcper,'c':totaleContorni,
                                               'dfz':diferenza,'ti':totaleIncassi,'tip':totaleIncassiPre})
 
 def listaVenta(request):
