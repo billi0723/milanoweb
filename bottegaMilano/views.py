@@ -1,4 +1,5 @@
-﻿import os
+﻿from encodings import utf_8
+import os
 import tempfile
 import json
 
@@ -490,11 +491,14 @@ def lege_DataPDF(request):
     mail = conectar_correo()
     if not mail:
         return HttpResponse("non esiste conessione col email")
+    else:
+        print("se conecto al email ")
 
     hoy = datetime.date.today()
     fecha = hoy.strftime('%d-%b-%Y')
+    print("fecha "+fecha)
     
-    status, mensajes = mail.uid('search',None,'FROM','reporting@mercatocentrale.it','ON',fecha)
+    status, mensajes = mail.uid('search',None,'FROM','reporting@mercatocentrale.it','ON','12-Jul-2026')
     id_correos = mensajes[0].decode().split()
     if not id_correos:
         print("No se encontraron correos nuevos sin leer.")
@@ -510,6 +514,11 @@ def lege_DataPDF(request):
             msg = email.message_from_bytes(data[0][1])
             if msg["Subject"]:
                 asunto, codificacion = decode_header(msg["Subject"])[0]
+                
+                print(asunto)
+             # Decodificar el asunto del correo si tiene caracteres raros
+            if isinstance(asunto, bytes):
+                asunto = asunto.decode(codificacion or "utf-8")
 
         # Revisar las partes del correo para buscar archivos adjuntos
         
@@ -532,13 +541,14 @@ def lege_DataPDF(request):
             if nombre_archivo.lower().endswith('.pdf'):
                 contenido = parte.get_payload(decode=True)
                 file_memoria = io.BytesIO(contenido)
-
+                print(file_memoria)
                 if "90516" in nombre_archivo:
-                                bottega = "Macelleria Milano"
-                                pdfFileObj = PyPDF2.PdfReader(file_memoria)
-                                testo_completo = ""
-                                for page in pdfFileObj.pages:
-                                    respuesta += page.extract_text()
+                    if "giornata MCM" in asunto:
+                        bottega = "Macelleria Milano"
+                        pdfFileObj = PyPDF2.PdfReader(file_memoria)
+                        testo_completo = ""
+                        for page in pdfFileObj.pages:
+                            respuesta += page.extract_text()
                 existepdf = True
             if not existepdf:
                 if nombre_archivo.lower().endswith(('.xls','xlsx')):
