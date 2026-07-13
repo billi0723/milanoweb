@@ -490,7 +490,7 @@ def lege_DataPDF(request):
     respuesta = ""
     mail = conectar_correo()
     if not mail:
-        return HttpResponse("non esiste conessione col email")
+        return HttpResponse(print(os.environ.get('EMAIL_CONTRASENA')))
     else:
         print("se conecto al email ")
 
