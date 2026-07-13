@@ -490,7 +490,8 @@ def lege_DataPDF(request):
     respuesta = ""
     mail = conectar_correo()
     if not mail:
-        return HttpResponse(print(os.environ.get('EMAIL_CONTRASENA')))
+        passw = os.environ.get('EMAIL_CONTRASENA')
+        return HttpResponse(passw)
     else:
         print("se conecto al email ")
 
