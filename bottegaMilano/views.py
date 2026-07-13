@@ -499,12 +499,13 @@ def lege_DataPDF(request):
     fecha = hoy.strftime('%d-%b-%Y')
     print("fecha "+fecha)
     
-    status, mensajes = mail.uid('search',None,'FROM','reporting@mercatocentrale.it','ON','12-Jul-2026')
+    status, mensajes = mail.uid('search',None,'FROM','reporting@mercatocentrale.it','ON',fecha)
     id_correos = mensajes[0].decode().split()
     if not id_correos:
         print("No se encontraron correos nuevos sin leer.")
         return HttpResponse("non ci sono emails")
     
+    existepdf = False
     for correos in id_correos:
         asunto="vacio"
         msg="vacio"
@@ -515,7 +516,6 @@ def lege_DataPDF(request):
             msg = email.message_from_bytes(data[0][1])
             if msg["Subject"]:
                 asunto, codificacion = decode_header(msg["Subject"])[0]
-                
                 print(asunto)
              # Decodificar el asunto del correo si tiene caracteres raros
             if isinstance(asunto, bytes):
@@ -523,7 +523,6 @@ def lege_DataPDF(request):
 
         # Revisar las partes del correo para buscar archivos adjuntos
         
-        existepdf = False
         for parte in msg.walk():
             # Si el tipo de contenido no es un adjunto, lo saltamos
             if parte.get_content_maintype() == 'multipart':
@@ -539,21 +538,24 @@ def lege_DataPDF(request):
                 nombre_archivo = nombre_archivo_decodificado.decode(cod or "utf-8")
 
             # Verificar si el archivo es un PDF
-            if nombre_archivo.lower().endswith('.pdf'):
-                contenido = parte.get_payload(decode=True)
-                file_memoria = io.BytesIO(contenido)
-                print(file_memoria)
-                if "90516" in nombre_archivo:
-                    if "giornata MCM" in asunto:
+            if "giornata MCM" in asunto:
+                if  "90516" in nombre_archivo:
+                    if nombre_archivo.lower().endswith('.pdf'):
+                        contenido = parte.get_payload(decode=True)
+                        file_memoria = io.BytesIO(contenido)
+                        print(file_memoria)
+                
                         bottega = "Macelleria Milano"
                         pdfFileObj = PyPDF2.PdfReader(file_memoria)
                         testo_completo = ""
                         for page in pdfFileObj.pages:
                             respuesta += page.extract_text()
-                existepdf = True
-            if not existepdf:
-                if nombre_archivo.lower().endswith(('.xls','xlsx')):
-                    return HttpResponse("non esiste il pdf")
+                        existepdf = True
+            else:
+                continue
+    if not existepdf:
+        if nombre_archivo.lower().endswith(('.xls','xlsx')):
+            return HttpResponse("non esiste il pdf")        
 
     # Cerrar sesión de manera segura
     mail.close()
