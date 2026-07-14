@@ -504,11 +504,12 @@ def lege_DataPDF(request):
     if not id_correos:
         print("No se encontraron correos nuevos sin leer.")
         return HttpResponse("non ci sono emails")
-    
+    giornaliero = False
     existepdf = False
     for correos in id_correos:
         asunto="vacio"
         msg="vacio"
+        
          # Obtener el contenido del correo
         status, data = mail.uid('fetch',correos, '(RFC822)')
         if data and isinstance(data[0], tuple):
@@ -551,6 +552,20 @@ def lege_DataPDF(request):
                         for page in pdfFileObj.pages:
                             respuesta += page.extract_text()
                         existepdf = True
+            if "giornaliero MCM" in asunto:
+                if  "90516" in nombre_archivo:
+                    if nombre_archivo.lower().endswith('.pdf'):
+                        contenido = parte.get_payload(decode=True)
+                        file_memoria = io.BytesIO(contenido)
+                        print(file_memoria)
+                
+                        bottega = "Macelleria Milano"
+                        pdfFileObj = PyPDF2.PdfReader(file_memoria)
+                        testo_completo = ""
+                        for page in pdfFileObj.pages:
+                            respuesta += page.extract_text()
+                        existepdf = True
+                        giornaliero = True
             else:
                 continue
     if not existepdf:
@@ -602,18 +617,27 @@ def lege_DataPDF(request):
             continue
         if re.search(r"TOTALE INCASSI\s(.*)",orari,re.IGNORECASE):
             if incasso:
-                totaleIncassi = orari
+                ti = orari
+                numinc = ti.split("TOTALE INCASSI")[1]
+                partes = numinc.split()
+                fechaincaso = partes[0]
+                totaleIncassi = partes[1]
                 incasso = False
             else:
-                totaleIncassiPre = orari
+                tip = orari
+                numincpre = tip.split("TOTALE INCASSI")[1]
+                partespre = numincpre.split()
+                fechaincasopre = partespre[0]
+                totaleIncassiPre = partespre[1]
             datosOrari = False
-        if re.search(r"DIFFERENZA\s*(.*)",orari,re.IGNORECASE):
-            diferenza = orari
+        if re.search(r"DIFFERENZA\s*(.*)",orari,re.IGNORECASE): 
+            dif = orari
+            num = dif.split("ANALISI ARTICOLI")[0]
+            diferenza = num.split("DIFFERENZA % PERIODO PRECEDENTE")[1]
             datosOrari = False
         if datosOrari:
             listaOrari.append(orari)
 
-    totaleIncassi
     patronOrari = r"(?P<orari>\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2})\s*(?P<importeOra>[\d.,]+)"
     listaImporario = []
     for incassi in listaOrari:
@@ -668,7 +692,8 @@ def lege_DataPDF(request):
     tmper = totaleMacelleria + totaleMacelleria*10/100
 
     return render(request, 'pdfTesto.html',{'testo':listaArti,'orari':listaImporario,'tm':tmper,'tc':tcper,'c':totaleContorni,
-                                              'dfz':diferenza,'ti':totaleIncassi,'tip':totaleIncassiPre})
+                                              'dfz':diferenza,'ti':totaleIncassi,'tip':totaleIncassiPre,
+                                              'fi':fechaincaso,'fip':fechaincasopre,'giornaliero':giornaliero})
 
 def listaVenta(request):
     lst=Venta.objects.all().values("nomeProdutto","importo","unita","totPer")
