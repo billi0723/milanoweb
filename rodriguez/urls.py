@@ -28,8 +28,6 @@ app_name = 'bottegaMilano'
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('ventas/', formVenta, name='formulario'),
-    #path('',caricarePdf),
-    #path('testoPdf/', caricarePdf, name='testoPdf'),
     path('', report_macelleria_Milano, name='report_macelleria_Milano'),
     path('reportData/', reportData, name='reportData'),
     path('listaBDBottegue/', listaBDBottegue, name='listaBDBottegue'),

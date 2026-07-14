@@ -75,8 +75,6 @@ def conectar_correo():
 
 
 def extraer_texto_pdf(ruta_pdf):
-    #Lee un archivo PDF local y extrae su texto."""
-    #print(f"\n--- Leyendo contenido de: {ruta_pdf} ---")
     try:
         reader = PyPDF2.PdfReader(ruta_pdf)
         texto_completo = ""
@@ -213,6 +211,102 @@ def lista_reportes(request):
             if archivo.endswith(('.pdf','.xls','.xlsx')):
                 reportes.append(archivo)
     return render(request,'reportes.html',{'reportes':reportes})
+
+def addPdfDatabase(request):
+    respuesta = ""
+    fecha = ""
+    if request.method == 'POST':
+        formCalendar = CalendarReport(request.POST)
+        if formCalendar.is_valid():
+            fecha = request.POST.get('calendario')
+            fp = fecha
+            fecha = fecha.replace('/','-')
+            partes = fecha.split('-')
+            fecha = f"{partes[2]}-{partes[1]}-{partes[0]}"
+            
+            mail = conectar_correo()
+            if not mail:
+                passw = os.environ.get('EMAIL_CONTRASENA')
+                return HttpResponse("Non c'e conessione col e-mail.")
+            else:
+                print("conetto al email ")
+    
+            status, mensajes = mail.uid('search',None,'FROM','reporting@mercatocentrale.it','ON',fecha)
+            id_correos = mensajes[0].decode().split()
+            if not id_correos:
+                return HttpResponse("non ci sono emails")
+            giornaliero = False
+            existepdf = False
+            for correos in id_correos:
+                asunto="vacio"
+                msg="vacio"
+        
+                    # Obtener el contenido del correo
+                status, data = mail.uid('fetch',correos, '(RFC822)')
+                if data and isinstance(data[0], tuple):
+                    # Parsear el contenido del correo
+                    msg = email.message_from_bytes(data[0][1])
+                    if msg["Subject"]:
+                        asunto, codificacion = decode_header(msg["Subject"])[0]
+                        print(asunto)
+                        # Decodificar el asunto del correo si tiene caracteres raros
+                    if isinstance(asunto, bytes):
+                        asunto = asunto.decode(codificacion or "utf-8")
+
+                # Revisar las partes del correo para buscar archivos adjuntos
+        
+                for parte in msg.walk():
+                    # Si el tipo de contenido no es un adjunto, lo saltamos
+                    if parte.get_content_maintype() == 'multipart':
+                        continue
+                    if parte.get('Content-Disposition') is None:
+                        continue
+                    nombre_archivo = parte.get_filename()
+
+                    if nombre_archivo:
+                    # Decodificar el nombre del archivo si tiene caracteres raros
+                        nombre_archivo_decodificado, cod = decode_header(nombre_archivo)[0]
+                    if isinstance(nombre_archivo_decodificado, bytes):
+                        nombre_archivo = nombre_archivo_decodificado.decode(cod or "utf-8")
+
+                    # Verificar si el archivo es un PDF
+                    if "giornata MCM" in asunto:
+                        if  "90516" in nombre_archivo:
+                            if nombre_archivo.lower().endswith('.pdf'):
+                                contenido = parte.get_payload(decode=True)
+                                file_memoria = io.BytesIO(contenido)
+                                print(file_memoria)
+                
+                                bottega = "Macelleria Milano"
+                                pdfFileObj = PyPDF2.PdfReader(file_memoria)
+                                testo_completo = ""
+                                for page in pdfFileObj.pages:
+                                    respuesta += page.extract_text()
+                                existepdf = True
+                    if "giornaliero MCM" in asunto:
+                        if  "90516" in nombre_archivo:
+                            if nombre_archivo.lower().endswith('.pdf'):
+                                contenido = parte.get_payload(decode=True)
+                                file_memoria = io.BytesIO(contenido)
+                                print(file_memoria)
+                
+                                bottega = "Macelleria Milano"
+                                pdfFileObj = PyPDF2.PdfReader(file_memoria)
+                                testo_completo = ""
+                                for page in pdfFileObj.pages:
+                                    respuesta += page.extract_text()
+                                existepdf = True
+                                giornaliero = True
+                    else:
+                        continue
+            if not existepdf:
+                if nombre_archivo.lower().endswith(('.xls','xlsx')):
+                    return HttpResponse("non esiste il pdf")        
+
+            # Cerrar sesión de manera segura
+            mail.close()
+            mail.logout()
+        
 
 def reportData(request):
     respuesta = ""
@@ -395,7 +489,6 @@ def reportData(request):
     return render(request, 'reportes.html', {'respuesta': listaBottega,'fecha':fecha,'formCalendar':formCalendar})
 
 def datosPDF(texto,fecha,bottega):
-    dataDoc = fecha
     
     listaIncasi = {}
     totaleIncassi = ""
@@ -436,7 +529,7 @@ def datosPDF(texto,fecha,bottega):
                       'incassoPre':totaleIncassiPre,
                       'diferenza':diferenza,
                       'ingressi':ingresi,
-                      'data':dataDoc,
+                      'data':fecha,
                       'bottega':bottega}]
     errors = client.insert_rows_json(table_id,row_to_insert)
     return listaIncasi
@@ -463,7 +556,7 @@ def eliminaData(request):
     client.query(sql).result()
     return redirect('/listaBD/')
 
-#-------------DOCUMENTO DE MILANO----------------------------
+
 def caricarePdf(request):
 
     testo=""
@@ -481,6 +574,8 @@ def caricarePdf(request):
     request.session['testo'] = testo
     return render(request, 'pdfTesto.html', {'testo': testo})
 
+#-------------DOCUMENTO DE MILANO----------------------------
+
 cotoletteArticoli = ["Base + patatine","Manzo sportiva","La mortazza","Manzo base + patate","La sportiva",
             "Cotoletta base","Cotoletta Pros Crudo E Fichi - Vitello","Cotoletta Pros Crudo E Fichi - Suino",
             "Con osso manzo","Manzo porcellina","Manzo mortazza","La porcellina","La raffinata","Manzo base","Manzo base + patate"]
@@ -491,101 +586,92 @@ def report_macelleria_Milano(request):
     mail = conectar_correo()
     if not mail:
         passw = os.environ.get('EMAIL_CONTRASENA')
-        return HttpResponse(passw)
+        return HttpResponse("Non c'e conessione col e-mail.")
     else:
-        print("se conecto al email ")
+        print("conetto al email ")
 
     hoy = datetime.date.today()
     fecha = hoy.strftime('%d-%b-%Y')
-    print("fecha "+fecha)
     
-    status, mensajes = mail.uid('search',None,'FROM','reporting@mercatocentrale.it','ON',fecha)
+    status, mensajes = mail.uid('search',None,'FROM','reporting@mercatocentrale.it','ON','05-Jul-2026')
     id_correos = mensajes[0].decode().split()
     if not id_correos:
-        print("No se encontraron correos nuevos sin leer.")
         return HttpResponse("non ci sono emails")
-    giornaliero = False
+    giornaliero = True
     existepdf = False
+    
     for correos in id_correos:
-        asunto="vacio"
-        msg="vacio"
+        if not existepdf:
+            asunto="vacio"
+            msg="vacio"
+            
+                # Obtener el contenido del correo
+            status, data = mail.uid('fetch',correos, '(RFC822)')
+            if data and isinstance(data[0], tuple):
+                # Parsear el contenido del correo
+                msg = email.message_from_bytes(data[0][1])
+                if msg["Subject"]:
+                    asunto, codificacion = decode_header(msg["Subject"])[0]
+                    print(asunto)
+                    # Decodificar el asunto del correo si tiene caracteres raros
+                if isinstance(asunto, bytes):
+                    asunto = asunto.decode(codificacion or "utf-8")
+
+            # Revisar las partes del correo para buscar archivos adjuntos
         
-         # Obtener el contenido del correo
-        status, data = mail.uid('fetch',correos, '(RFC822)')
-        if data and isinstance(data[0], tuple):
-            # Parsear el contenido del correo
-            msg = email.message_from_bytes(data[0][1])
-            if msg["Subject"]:
-                asunto, codificacion = decode_header(msg["Subject"])[0]
-                print(asunto)
-             # Decodificar el asunto del correo si tiene caracteres raros
-            if isinstance(asunto, bytes):
-                asunto = asunto.decode(codificacion or "utf-8")
+            for parte in msg.walk():
+                # Si el tipo de contenido no es un adjunto, lo saltamos
+                if parte.get_content_maintype() == 'multipart':
+                    continue
+                if parte.get('Content-Disposition') is None:
+                    continue
+                nombre_archivo = parte.get_filename()
 
-        # Revisar las partes del correo para buscar archivos adjuntos
-        
-        for parte in msg.walk():
-            # Si el tipo de contenido no es un adjunto, lo saltamos
-            if parte.get_content_maintype() == 'multipart':
-                continue
-            if parte.get('Content-Disposition') is None:
-                continue
-            nombre_archivo = parte.get_filename()
-
-            if nombre_archivo:
-            # Decodificar el nombre del archivo si tiene caracteres raros
-                nombre_archivo_decodificado, cod = decode_header(nombre_archivo)[0]
-            if isinstance(nombre_archivo_decodificado, bytes):
-                nombre_archivo = nombre_archivo_decodificado.decode(cod or "utf-8")
-
-            # Verificar si el archivo es un PDF
-            if "giornata MCM" in asunto:
-                if  "90516" in nombre_archivo:
-                    if nombre_archivo.lower().endswith('.pdf'):
-                        contenido = parte.get_payload(decode=True)
-                        file_memoria = io.BytesIO(contenido)
-                        print(file_memoria)
+                if nombre_archivo:
+                # Decodificar el nombre del archivo si tiene caracteres raros
+                    nombre_archivo_decodificado, cod = decode_header(nombre_archivo)[0]
+                if isinstance(nombre_archivo_decodificado, bytes):
+                    nombre_archivo = nombre_archivo_decodificado.decode(cod or "utf-8")
                 
-                        bottega = "Macelleria Milano"
-                        pdfFileObj = PyPDF2.PdfReader(file_memoria)
-                        testo_completo = ""
-                        for page in pdfFileObj.pages:
-                            respuesta += page.extract_text()
-                        existepdf = True
-            if "giornaliero MCM" in asunto:
-                if  "90516" in nombre_archivo:
-                    if nombre_archivo.lower().endswith('.pdf'):
-                        contenido = parte.get_payload(decode=True)
-                        file_memoria = io.BytesIO(contenido)
-                        print(file_memoria)
+                # Verificar si el archivo es un PDF
+                if "giornata MCM" in asunto:
+                    if  "90516" in nombre_archivo:
+                        if nombre_archivo.lower().endswith('.pdf'):
+                            contenido = parte.get_payload(decode=True)
+                            file_memoria = io.BytesIO(contenido)
+                            print(file_memoria)
                 
-                        bottega = "Macelleria Milano"
-                        pdfFileObj = PyPDF2.PdfReader(file_memoria)
-                        testo_completo = ""
-                        for page in pdfFileObj.pages:
-                            respuesta += page.extract_text()
-                        existepdf = True
-                        giornaliero = True
-            else:
-                continue
+                            bottega = "Macelleria Milano"
+                            pdfFileObj = PyPDF2.PdfReader(file_memoria)
+                            testo_completo = ""
+                            for page in pdfFileObj.pages:
+                                respuesta += page.extract_text()
+                            existepdf = True
+                            break
+                else:
+                    continue
+                """if "giornaliero MCM" in asunto:
+                    if giornaliero and not existepdf:
+                        if  "90516" in nombre_archivo:
+                            if nombre_archivo.lower().endswith('.pdf'):
+                                contenido = parte.get_payload(decode=True)
+                                file_memoria = io.BytesIO(contenido)
+                                print(file_memoria)
+                
+                                bottega = "Macelleria Milano"
+                                pdfFileObj = PyPDF2.PdfReader(file_memoria)
+                                testo_completo = ""
+                                for page in pdfFileObj.pages:
+                                    respuesta += page.extract_text()
+                                existepdf = True"""
+
     if not existepdf:
         if nombre_archivo.lower().endswith(('.xls','xlsx')):
-            return HttpResponse("non esiste il pdf")        
+            return HttpResponse("Non esiste ancora il report di metà giornata di oggi")        
 
     # Cerrar sesión de manera segura
     mail.close()
     mail.logout()
-
-    """if request.method == 'POST':
-        form = PdfForm(request.POST, request.FILES)
-        if form.is_valid():
-             f = request.FILES['pdf_extra']
-             pdfFileObj = PyPDF2.PdfReader(f)
-             for page in pdfFileObj.pages:
-                respuesta += page.extract_text()+"\n"
-    else:
-        form = PdfForm()
-        return render(request, 'pdfTesto.html', {'form': form})"""
 
     listaTesto = []
     listaOrari = []
