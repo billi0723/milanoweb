@@ -593,7 +593,7 @@ def report_macelleria_Milano(request):
     hoy = datetime.date.today()
     fecha = hoy.strftime('%d-%b-%Y')
     
-    status, mensajes = mail.uid('search',None,'FROM','reporting@mercatocentrale.it','ON','05-Jul-2026')
+    status, mensajes = mail.uid('search',None,'FROM','reporting@mercatocentrale.it','ON',fecha)
     id_correos = mensajes[0].decode().split()
     if not id_correos:
         return HttpResponse("non ci sono emails")
@@ -764,8 +764,8 @@ def report_macelleria_Milano(request):
 
     tcper = totaleCotoleteria + totaleCotoleteria*10/100
     tmper = totaleMacelleria + totaleMacelleria*10/100
-
-    return render(request, 'reportMacelleriaMilano.html',{'testo':listaArti,'orari':listaImporario,'tm':tmper,'tc':tcper,'c':totaleContorni,
+    tcper = totaleContorni + totaleContorni*10/100
+    return render(request, 'reportMacelleriaMilano.html',{'testo':listaArti,'orari':listaImporario,'tm':tmper,'tc':tcper,'c':tcper,
                                               'dfz':diferenza,'ti':totaleIncassi,'tip':totaleIncassiPre,
                                               'fi':fechaincaso,'fip':fechaincasopre,'giornaliero':giornaliero})
 
