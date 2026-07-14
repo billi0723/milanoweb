@@ -486,7 +486,7 @@ cotoletteArticoli = ["Base + patatine","Manzo sportiva","La mortazza","Manzo bas
             "Con osso manzo","Manzo porcellina","Manzo mortazza","La porcellina","La raffinata","Manzo base","Manzo base + patate"]
 contorni = ["Patate Al Forno","Verdure","Riso"]
 
-def lege_DataPDF(request):
+def report_macelleria_Milano(request):
     respuesta = ""
     mail = conectar_correo()
     if not mail:
@@ -576,7 +576,6 @@ def lege_DataPDF(request):
     mail.close()
     mail.logout()
 
-    
     """if request.method == 'POST':
         form = PdfForm(request.POST, request.FILES)
         if form.is_valid():
@@ -587,17 +586,6 @@ def lege_DataPDF(request):
     else:
         form = PdfForm()
         return render(request, 'pdfTesto.html', {'form': form})"""
-    #testo=""
-    #if request.method == 'POST':
-    #   form = PdfForm(request.POST, request.FILES)
-    #    if form.is_valid():
-    #         f = request.FILES['pdf_extra']
-    #         pdfFileObj = PyPDF2.PdfReader(f)
-    #         for page in pdfFileObj.pages:
-    #            testo += page.extract_text()+"\n"
-    #else:
-    #    form = PdfForm()
-    #    return render(request, 'pdfTesto.html', {'form': form})
 
     listaTesto = []
     listaOrari = []
@@ -691,7 +679,7 @@ def lege_DataPDF(request):
     tcper = totaleCotoleteria + totaleCotoleteria*10/100
     tmper = totaleMacelleria + totaleMacelleria*10/100
 
-    return render(request, 'pdfTesto.html',{'testo':listaArti,'orari':listaImporario,'tm':tmper,'tc':tcper,'c':totaleContorni,
+    return render(request, 'reportMacelleriaMilano.html',{'testo':listaArti,'orari':listaImporario,'tm':tmper,'tc':tcper,'c':totaleContorni,
                                               'dfz':diferenza,'ti':totaleIncassi,'tip':totaleIncassiPre,
                                               'fi':fechaincaso,'fip':fechaincasopre,'giornaliero':giornaliero})
 

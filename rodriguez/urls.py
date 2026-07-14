@@ -30,7 +30,7 @@ urlpatterns = [
     path('ventas/', formVenta, name='formulario'),
     #path('',caricarePdf),
     #path('testoPdf/', caricarePdf, name='testoPdf'),
-    path('', lege_DataPDF, name='lege_DataPDF'),
+    path('', report_macelleria_Milano, name='report_macelleria_Milano'),
     path('reportData/', reportData, name='reportData'),
     path('listaBDBottegue/', listaBDBottegue, name='listaBDBottegue'),
     path('eliminaData/', eliminaData, name='eliminaData'),
