@@ -202,6 +202,8 @@ def buscar_y_procesar_pdfs(request):
     return render(request,'correos.html',{'correos':listaBottega})
     #return HttpResponse("pdf guardado")
 
+
+
 def lista_reportes(request):
     #ruta_dir = os.path.join(os.getcwd())
     ruta_dir = "C:/Users/billi/Desktop/Python App/DjangoWeb/report"
@@ -213,7 +215,7 @@ def lista_reportes(request):
     return render(request,'reportes.html',{'reportes':reportes})
 
 def addPdfDatabase(request):
-    respuesta = ""
+    testo = ""
     fecha = ""
     if request.method == 'POST':
         formCalendar = CalendarReport(request.POST)
@@ -231,7 +233,7 @@ def addPdfDatabase(request):
             else:
                 print("conetto al email ")
     
-            status, mensajes = mail.uid('search',None,'FROM','reporting@mercatocentrale.it','ON',fecha)
+            status, mensajes = mail.uid('search',None,'FROM','reporting@mercatocentrale.it','ON','01-Jan-2024')
             id_correos = mensajes[0].decode().split()
             if not id_correos:
                 return HttpResponse("non ci sono emails")
@@ -269,34 +271,51 @@ def addPdfDatabase(request):
                     if isinstance(nombre_archivo_decodificado, bytes):
                         nombre_archivo = nombre_archivo_decodificado.decode(cod or "utf-8")
 
+                    # Verificar la Bottega
+                    if "90606" in nombre_archivo:
+                        bottega = "Macelleria Bolzano"
+                    elif "90619" in nombre_archivo:
+                        bottega = "Girarrosto Bolzano"
+                    elif "90132" in nombre_archivo:
+                        bottega = "Ristorante Firenze"
+                    elif "90516" in nombre_archivo:
+                        bottega = "Macelleria Milano"
+                    elif "90518" in nombre_archivo:
+                        bottega = "Girarrosto Milano"
+                    elif "90410" in nombre_archivo:
+                        bottega = "Girarrosto Torino"
+                    elif "90422" in nombre_archivo:
+                        bottega = "Hamburguer Torino"
+                    elif "90313" in nombre_archivo:
+                        bottega = "Gilly"
+                    elif "90411" in nombre_archivo:
+                        bottega = "Macelleria Torino"
+                    elif "90119" in nombre_archivo:
+                        bottega = "Girarrosto Firenze"
+                    elif "90204" in nombre_archivo:
+                        bottega = "Macelleria Roma"
+                    elif "90211" in nombre_archivo:
+                        bottega = "Girarrosto Roma"
+                    elif "90101" in nombre_archivo:
+                        bottega = "Macelleria Firenze"
+                    elif "1118" in nombre_archivo:
+                        bottega = "Girarrosto Albatroz"
+                    elif "1131" in nombre_archivo:
+                        bottega = "Macelleria Albatroz"
                     # Verificar si el archivo es un PDF
-                    if "giornata MCM" in asunto:
-                        if  "90516" in nombre_archivo:
-                            if nombre_archivo.lower().endswith('.pdf'):
-                                contenido = parte.get_payload(decode=True)
-                                file_memoria = io.BytesIO(contenido)
-                                print(file_memoria)
-                
-                                bottega = "Macelleria Milano"
-                                pdfFileObj = PyPDF2.PdfReader(file_memoria)
-                                testo_completo = ""
-                                for page in pdfFileObj.pages:
-                                    respuesta += page.extract_text()
-                                existepdf = True
-                    if "giornaliero MCM" in asunto:
-                        if  "90516" in nombre_archivo:
-                            if nombre_archivo.lower().endswith('.pdf'):
-                                contenido = parte.get_payload(decode=True)
-                                file_memoria = io.BytesIO(contenido)
-                                print(file_memoria)
-                
-                                bottega = "Macelleria Milano"
-                                pdfFileObj = PyPDF2.PdfReader(file_memoria)
-                                testo_completo = ""
-                                for page in pdfFileObj.pages:
-                                    respuesta += page.extract_text()
-                                existepdf = True
-                                giornaliero = True
+                    if nombre_archivo.lower().endswith('.pdf'):
+                        if "Report bottega giornaliero" in asunto:
+                            contenido = parte.get_payload(decode=True)
+                            file_memoria = io.BytesIO(contenido)
+                        
+                            pdfFileObj = PyPDF2.PdfReader(file_memoria)
+                            
+                            for page in pdfFileObj.pages:
+                                testo += page.extract_text()
+                             
+                            return HttpResponse(testo)
+                            obtenerInfoPdf(testo,fecha,bottega)
+                            existepdf = True
                     else:
                         continue
             if not existepdf:
@@ -306,7 +325,65 @@ def addPdfDatabase(request):
             # Cerrar sesión de manera segura
             mail.close()
             mail.logout()
+    return redirect('http://127.0.0.1:8000/listaBDBottegue/')
+    #return render(request,'listaBD.html')
         
+def obtenerInfoPdf(texto,fecha,bottega):
+    listaIncasi = {}
+    totaleIncassi = ""
+    totaleIncassiPre = ""
+    diferenza = ""
+    ingresi = ""
+    incasso = True
+   
+    for t in texto.splitlines():
+            if re.search(r"TOTALE INCASSI",t,re.IGNORECASE):
+                if incasso:
+                    ti = t.split('TOTALE INCASSI')[1].strip()
+                    totaleIncassi = ti.split(" ")[1]
+                    listaIncasi['inc']=totaleIncassi
+                    incasso = False
+                else:
+                    tip = t.split('TOTALE INCASSI')[1].strip()
+                    totaleIncassiPre = tip.split(" ")[1]
+                    listaIncasi['pre']=totaleIncassiPre
+            elif re.search(r"DIFFERENZA",t,re.IGNORECASE):
+                d = t.split("DIFFERENZA % PERIODO PRECEDENTE")[1].strip()
+                diferenza = d.split("ANALISI ARTICOLI")[0]
+                listaIncasi['dif']=diferenza
+            elif re.search(r"INGRESSI",t,re.IGNORECASE):
+                i = t.split('INGRESSI')[1].strip()
+                longi = len(i.split(" ")[1])
+                cadena = i.split(" ")[0]
+                ingresi = cadena[longi:len(cadena)]
+                listaIncasi['ing']=ingresi
+
+    client = bigquery.Client()
+    table_id = 'project-d83b9b63-299f-44e9-be1.bdBottegue.venditaGiorno'
+    row_to_insert = [{
+                      'data':fecha,
+                      'bottega':bottega,
+                      'incasso':totaleIncassi,
+                      'incassoPre':totaleIncassiPre,
+                      'diferenza':diferenza,
+                      'ingressi':ingresi
+                      }]
+    errors = client.insert_rows_json(table_id,row_to_insert)
+
+# -------------GET DE DATOS DE LA BD-----------------
+def listaBDBottegue(request):
+    lista = []
+    try:
+        client = bigquery.Client()
+        query = f"SELECT * FROM `{PROJECTO}.{DB}.{TABELA}` LIMIT 100"
+        query_job = client.query(query)
+
+        for row in query_job.result():
+            lista.append(dict(row))
+    except Exception as e:
+        print (f"Errore di conessione {e}")
+
+    return render(request,'listaBD.html',{'lista':lista})
 
 def reportData(request):
     respuesta = ""
@@ -534,20 +611,6 @@ def datosPDF(texto,fecha,bottega):
     errors = client.insert_rows_json(table_id,row_to_insert)
     return listaIncasi
 
-# -------------GET DE DATOS DE LA BD-----------------
-def listaBDBottegue(request):
-    lista = []
-    try:
-        client = bigquery.Client()
-        query = f"SELECT * FROM `{PROJECTO}.{DB}.{TABELA}` LIMIT 100"
-        query_job = client.query(query)
-
-        for row in query_job.result():
-            lista.append(dict(row))
-    except Exception as e:
-        print (f"Errore di conessione {e}")
-
-    return render(request,'listaBD.html',{'lista':lista})
 
 # ----------DELETE TABLA -------------------
 def eliminaData(request):
@@ -762,10 +825,10 @@ def report_macelleria_Milano(request):
     totaleCotoleteria += totaleContorni/2
     totaleMacelleria += totaleContorni/2
 
-    tcper = totaleCotoleteria + totaleCotoleteria*10/100
+    tcoper = totaleCotoleteria + totaleCotoleteria*10/100
     tmper = totaleMacelleria + totaleMacelleria*10/100
     tcper = totaleContorni + totaleContorni*10/100
-    return render(request, 'reportMacelleriaMilano.html',{'testo':listaArti,'orari':listaImporario,'tm':tmper,'tc':tcper,'c':tcper,
+    return render(request, 'reportMacelleriaMilano.html',{'testo':listaArti,'orari':listaImporario,'tm':tmper,'tc':tcoper,'c':tcper,
                                               'dfz':diferenza,'ti':totaleIncassi,'tip':totaleIncassiPre,
                                               'fi':fechaincaso,'fip':fechaincasopre,'giornaliero':giornaliero})
 

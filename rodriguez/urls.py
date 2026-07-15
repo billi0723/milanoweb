@@ -34,5 +34,7 @@ urlpatterns = [
     path('eliminaData/', eliminaData, name='eliminaData'),
     path('buscar_y_procesar_pdfs/', buscar_y_procesar_pdfs, name='buscar_y_procesar_pdfs'),
     path('lista_reportes/', lista_reportes, name='lista_reportes'),
+    path('addPdfDatabase/', addPdfDatabase, name='addPdfDatabase'),
+    path('listaBDBottegue/', listaBDBottegue, name='listaBDBottegue'),
     #path('bottegaMilano/', include('bottegaMilano.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
