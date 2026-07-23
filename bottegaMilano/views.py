@@ -110,6 +110,7 @@ def addPdfDatabase(request):
         else:
             print("conesso al email ")
         status, mensajes = mail.uid('search',None,'FROM','reporting@mercatocentrale.it','ON',fecha)
+        #status, mensajes = mail.uid('search',None,'FROM','reporting@mercatocentrale.it','SINCE','09-Mar-2023','BEFORE','11-Mar-2023')
         id_correos = mensajes[0].decode().split()
         if not id_correos:
             return HttpResponse("non ci sono emails")
@@ -255,11 +256,11 @@ def addInfoPdf(texto,fecha,bottega):
             if i+1 < len(lineas):
                 siguiente = lineas[i+1].strip()
                 #listaa.append(siguiente)
-                match = re.search(r'(\d{4})\s*-?\s*([\d,]+)\s*(\d{4})',siguiente)
+                match = re.search(r'(\d{3,4})\s*-?\s*[\d\.,]+\s*(\d{3,4})',siguiente)
                 if match:
                     ingresi = match.group(1)             
-                    ingPer = match.group(2)
-                    ingPre = match.group(3)
+                    
+                    ingPre = match.group(2)
                     """else:
                         match2 = re.search(r'(\d{4})\s*([\d,]+)\s*(\d{4})',siguiente)
                         if match2:
@@ -267,7 +268,7 @@ def addInfoPdf(texto,fecha,bottega):
                             ingPer = match2.group(2)
                             ingPre = match2.group(3)"""
             #listaa.append(ingresi)
-            #listaa.append(ingPer)
+            
             #listaa.append(ingPre)
             #return listaa
                 
