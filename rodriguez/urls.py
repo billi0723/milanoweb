@@ -30,7 +30,6 @@ urlpatterns = [
     path('ventas/', formVenta, name='formulario'),
     path('', report_macelleria_Milano, name='report_macelleria_Milano'),
     path('reportData/', reportData, name='reportData'),
-    path('listaBDBottegue/', listaBDBottegue, name='listaBDBottegue'),
     path('eliminaData/', eliminaData, name='eliminaData'),
     path('buscar_y_procesar_pdfs/', buscar_y_procesar_pdfs, name='buscar_y_procesar_pdfs'),
     path('lista_reportes/', lista_reportes, name='lista_reportes'),
