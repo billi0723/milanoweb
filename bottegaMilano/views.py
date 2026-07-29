@@ -1,4 +1,5 @@
-﻿from encodings import utf_8
+﻿from ast import Str
+from encodings import utf_8
 import os
 from pickle import INT
 import tempfile
@@ -16,7 +17,7 @@ if(json_content):
 
 
 from ctypes.util import test
-import datetime
+from datetime import datetime
 import io
 from http import client
 from string import printable
@@ -80,9 +81,10 @@ def conectar_correo():
 
 def addPdfDatabase(request):
     testo = ""
-    hoy = datetime.date.today()
+    #hoy = datetime.date.today()
     fecha_pdf = ""
-    fecha = ""
+    fechaI = ""
+    fechaF = ""
     datapdf = ""
     bottega = ""
     lista = []
@@ -92,15 +94,25 @@ def addPdfDatabase(request):
         formCalendar = CalendarReport(request.POST)
         
         if formCalendar.is_valid():
-            fecha = request.POST.get('calendario')
+            fecha_ini = request.POST.get('calendario_inizio')
+            fecha_fine = request.POST.get('calendario_fine')
+            #return HttpResponse(fecha_ini+fecha_fine)        
             
             #fp = fecha
-            fecha = fecha.replace('/','-')
-            partes = fecha.split('-')
-            meses = {'01':'Jan','02':'Feb','03':'Mar','04':'Apr','05':'May','06':'Jun','07':'Jul',
+            #fecha = fecha.replace('/','-')
+            partes1 = fecha_ini.split('-')
+            meses1 = {'01':'Jan','02':'Feb','03':'Mar','04':'Apr','05':'May','06':'Jun','07':'Jul',
                      '08':'Aug','09':'Sep','10':'Oct','11':'Nov','12':'Dec'}
-            dia = int(partes[2])+1
-            fecha = f"{str(dia)}-{meses[partes[1]]}-{partes[0]}"
+            dia1 = int(partes1[2])+1
+            fechaI = f"{str(dia1)}-{meses1[partes1[1]]}-{partes1[0]}"
+            fechaIni = f"{partes1[2]}-{meses1[partes1[1]]}-{partes1[0]}"
+
+            partes2 = fecha_fine.split('-')
+            meses2 = {'01':'Jan','02':'Feb','03':'Mar','04':'Apr','05':'May','06':'Jun','07':'Jul',
+                     '08':'Aug','09':'Sep','10':'Oct','11':'Nov','12':'Dec'}
+            dia2 = int(partes2[2])+2
+            fechaF = f"{str(dia2)}-{meses2[partes2[1]]}-{partes2[0]}"
+            fechaFin = f"{partes2[2]}-{meses1[partes1[1]]}-{partes1[0]}"
             
         mail = conectar_correo()
 
@@ -109,8 +121,8 @@ def addPdfDatabase(request):
             return HttpResponse("Non c'e conessione col e-mail.")
         else:
             print("conesso al email ")
-        status, mensajes = mail.uid('search',None,'FROM','reporting@mercatocentrale.it','ON',fecha)
-        #status, mensajes = mail.uid('search',None,'FROM','reporting@mercatocentrale.it','SINCE','09-Mar-2023','BEFORE','11-Mar-2023')
+        #status, mensajes = mail.uid('search',None,'FROM','reporting@mercatocentrale.it','ON',fecha)
+        status, mensajes = mail.uid('search',None,'FROM','reporting@mercatocentrale.it','SINCE',fechaI,'BEFORE',fechaF)
         id_correos = mensajes[0].decode().split()
         if not id_correos:
             return HttpResponse("non ci sono emails")
@@ -120,7 +132,7 @@ def addPdfDatabase(request):
         for correos in id_correos:
             asunto="vacio"
             msg="vacio"
-        
+            
                 # Obtener el contenido del correo
             status, data = mail.uid('fetch',correos, '(RFC822)')
             if data and isinstance(data[0], tuple):
@@ -135,7 +147,8 @@ def addPdfDatabase(request):
                     print(asunto)
             a = asunto.split()
             #longi = len(a)
-            fecha_pdf = a[-1]            
+            fecha_pdf = a[-1]  
+            
             
             # Revisar las partes del correo para buscar archivos adjuntos
         
@@ -202,7 +215,7 @@ def addPdfDatabase(request):
                             
                         #lista.append(addInfoPdf(testo,fecha_pdf,bottega))
                         addInfoPdf(testo,fecha_pdf,bottega)
-                        datapdf = fecha_pdf
+                        #datapdf = fecha_pdf
                             
                         existepdf = True
                 else:
@@ -220,22 +233,24 @@ def addPdfDatabase(request):
      
     #return HttpResponse(lista)       
     base_url = reverse("listaBDBottegue")
-    query_string = urlencode({"data":datapdf})
+    query_string = urlencode({"data_inizio":fechaIni,"data_fine":fechaFin})
     return redirect(f"{base_url}?{query_string}")
         
 def addInfoPdf(texto,fecha,bottega):
+    
     listaIncasi = {}
     totaleIncassi = ""
     totaleIncassiPre = ""
-    diferenza = ""
-    ingresi = ""
-    ingPer = ""
-    ingPre = ""
-
+    diferenza = "0"
+    ingresi = "0"
+    ingPer = "0"
+    ingPre = "0"
     incasso = True
     listaa = []
+    
     lineas = texto.splitlines()
- 
+    match ="match"
+    trovo = False
     for i, t in enumerate(lineas):
         if re.search(r"TOTALE INCASSI\s(.*)",t,re.IGNORECASE):
             if incasso:
@@ -250,36 +265,120 @@ def addInfoPdf(texto,fecha,bottega):
         elif re.search(r"DIFFERENZA",t,re.IGNORECASE):
             d = t.split("DIFFERENZA % PERIODO PRECEDENTE")[1].strip()
             diferenza = d.split("ANALISI ARTICOLI")[0]
+            if diferenza == "":
+                diferenza = 100
             listaIncasi['dif']=diferenza
         elif re.search(r"INGRESSI",t,re.IGNORECASE):
-            #if bottega == "Macelleria Roma":
+            #listaa.append(t)
+            #if i+1 < len(lineas):
+            #listaa.append(t)
+            #siguiente = lineas[i+1].strip()
+            #match = re.search(r'INGRESSI\s*(d{1,4})\s*-?\s*[\d\.,]+\s*(\d{1,4})',t)
+            #match = re.search(r'INGRESSI\s*(d{1,5})(-?\d+.,\d+)\s*(\d{1,5})',t)
+            #match = re.search(r'INGRESSI\s*([\d\.,]+)[-\s]*[\d\.,]*\s*([\d\.,]+)',t,re.IGNORECASE)
+            #match = re.search(r'INGRESSI\s*([\d\.,]+).*?([\d\.,]+)\s*$',t,re.IGNORECASE)
+            
+            numeros = ""
+            siguiente = ""
+            numerosig = ""
+            res = ""
+            objn1 = 0
+            objn2 = 0
+            n1=0
+            n2=0
+            n3=0
+            m1 = 0
+            m2 = 0
+            r=0
+            dec = 1
+
+            alado = re.findall(r'\d{1,4}(?:\.\d{3})*,\d+|\d+,\d+|\d+',t)
+
             if i+1 < len(lineas):
                 siguiente = lineas[i+1].strip()
-                #listaa.append(siguiente)
-                match = re.search(r'(\d{3,4})\s*-?\s*[\d\.,]+\s*(\d{3,4})',siguiente)
-                if match:
-                    ingresi = match.group(1)             
+                numerosig = re.findall(r'\d{1,4}(?:\.\d{3})*,\d+|\d+,\d+|\d+',siguiente)
+
+            if  numerosig != "":
+                numeros = numerosig
+            else:
+                numeros = alado
+
+            if len(numeros) == 3:
+                t1 = numeros[0].replace('.','')
+                t1 = numeros[0].replace(',','.')
+                t2 = numeros[1].replace('.','')
+                t2 = numeros[1].replace(',','.')
+                n1 = round(float(t1))
+                n2 = round(float(t2),2)   
+                t3 = numeros[2].replace('.','')
+                t3 = numeros[2].replace(',','.')
+                n3 = round(float(t3))
+
+                nn2 = round(n2)
+                for i in range(len(str(nn2))):
+                    dec = dec*10
+                r = round(100 - (n1*100/n3),2)
+                if r == n2:
+                    ingresi = n1
+                    ingPer = n2
+                    ingPre = n3
+                else:
+                    trov = False
+                    contt = 0
+                    while trov == False:
+                        pos = len(t2)+contt
+                    objn1 = float(t1[:pos])
+                    objn2 = float(t1[pos:]+t2)
+                    r = round(100 - (objn1*100/n3),2)
+                    if r == objn2:
+                        ingresi = objn1
+                        ip = float(objn2)
+                        ingPer = ip/dec
+                        ingPre = n3
+                        trov = True
+                    else:
+                        contt += 1
                     
-                    ingPre = match.group(2)
-                    """else:
-                        match2 = re.search(r'(\d{4})\s*([\d,]+)\s*(\d{4})',siguiente)
-                        if match2:
-                            ingresi = match2.group(1)
-                            ingPer = match2.group(2)
-                            ingPre = match2.group(3)"""
-            #listaa.append(ingresi)
-            
-            #listaa.append(ingPre)
-            #return listaa
-                
-            """ing = t.split("INGRESSI")
-            ingre = ing[1].split()
-            longi = len(ingre[1])
-            cadena = ingre[0]
-            ingresi = cadena[longi:len(cadena)]
-            listaIncasi['ing']=ingresi
-            listaa.append(ing)"""
-      
+            elif len(numeros) == 2:
+                t1 = numeros[0].replace('.','')
+                t1 = numeros[0].replace(',','.')
+                t2 = numeros[1].replace('.','')
+                t2 = numeros[1].replace(',','.')
+                n1 = round(float(t1))
+                n2 = round(float(t2),2)
+
+                if n2 == 0:
+                    if '0.' in t1:
+                        ingresi = t1[:t1.find('0.')]
+                        ingPer = t1[t1.find('0.'):]
+                        ingPre = 0
+                elif n1 > n2:
+                    trova = False
+                    cont = 0
+                    while trova == False:
+                        pos = len(t2)+cont
+                        ob1 = float(t1[:pos])
+                        ob2 = float(t1[pos:])
+                        r = round(100 - (ob1*100/n2),2)*-1
+                        if r == ob2:
+                            ingresi = ob1
+                            ingPer = ob2
+                            ingPre = n2
+                            trova = True
+                        else:
+                            cont += 1
+                        
+            """listaa.append(bottega)
+            listaa.append(fecha)
+            listaa.append(n1)
+            listaa.append(n2)
+            listaa.append(n3)
+            listaa.append("---")
+            listaa.append(ingresi)
+            listaa.append(ingPer)
+            listaa.append(ingPre)
+            listaa.append('<br>')"""
+                      
     client = bigquery.Client()
     table_id = 'project-d83b9b63-299f-44e9-be1.bdBottegue.venditaGiorno'
     row_to_insert = [{
@@ -297,22 +396,37 @@ def addInfoPdf(texto,fecha,bottega):
     else:
         return HttpResponse("Errore durante l'inserimento")
 
+    #return listaa
+    
 # -------------LIST DE DATOS DE LA BD-----------------
 def listaBDBottegue(request):
-    data = request.GET.get('data')
-    
+    dataI = request.GET.get('data_inizio')
+    dataF = request.GET.get('data_fine')
+
+    dataI = datetime.strptime(dataI,'%d-%b-%Y').strftime('%d/%m/%Y')
+    dataF = datetime.strptime(dataF,'%d-%b-%Y').strftime('%d/%m/%Y')
+            
     lista = []
+    if not dataI or not dataF:
+        return HttpResponse("Mancanno le date")
     try:
         client = bigquery.Client()
-        query = f"SELECT * FROM `{PROJECTO}.{DB}.{TABELA}` WHERE data = '{data}' LIMIT 100"
-        query_job = client.query(query)
+        query = f"""SELECT * FROM `{PROJECTO}.{DB}.{TABELA}` WHERE PARSE_DATE('%d/%m/%Y',data) BETWEEN PARSE_DATE('%d/%m/%Y',@dataI) AND PARSE_DATE('%d/%m/%Y',@dataF) LIMIT 100"""
+        #query_job = client.query(query)
+        job_config = bigquery.QueryJobConfig(
+            query_parameters=[
+                bigquery.ScalarQueryParameter("dataI", "STRING", dataI),
+                bigquery.ScalarQueryParameter("dataF", "STRING", dataF),
+            ]
+        )
+        query_job = client.query(query, job_config=job_config)
 
         for row in query_job.result():
             lista.append(dict(row))
     except Exception as e:
         print (f"Errore di conessione {e}")
 
-    return render(request,'listaBD.html',{'lista':lista})
+    return render(request,'listaBD.html',{'lista':lista, 'dataI':dataI, 'dataF':dataF})
 
 # ----------DELETE TABLA -------------------
 def eliminaData(request):

@@ -103,7 +103,13 @@
                 <tr style="font-size:16px; font-family:'Californian FB'">
                     <td>
                         {% csrf_token %}
-                        {{ formCalendar.as_p }}
+                        {{ formCalendar.calendario_inizio.label_tag }}
+                        {{ formCalendar.calendario_inizio }}
+                    </td>
+                    <td>
+                        {% csrf_token %}
+                        {{ formCalendar.calendario_fine.label_tag }}
+                        {{ formCalendar.calendario_fine }}
                     </td>
                     <td style="padding-left: 30px "><input type="submit" value="Ok" /></td>
                 </tr>
