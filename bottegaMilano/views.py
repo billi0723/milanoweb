@@ -400,6 +400,7 @@ def addInfoPdf(texto,fecha,bottega):
     
 # -------------LIST DE DATOS DE LA BD-----------------
 def listaBDBottegue(request):
+    
     dataI = request.GET.get('data_inizio')
     dataF = request.GET.get('data_fine')
 
@@ -428,6 +429,70 @@ def listaBDBottegue(request):
 
     return render(request,'listaBD.html',{'lista':lista, 'dataI':dataI, 'dataF':dataF})
 
+def listaInfoBottegue(request):
+    if request.method == 'POST':
+        formCalendar = CalendarReport(request.POST)
+        
+        if formCalendar.is_valid():
+            fecha_ini = request.POST.get('calendario_inizio')
+            fecha_fine = request.POST.get('calendario_fine')
+            lista = []
+            totalePeriodo = {}
+            #return HttpResponse(fecha_ini+fecha_fine)        
+            
+            #fp = fecha
+            #fecha = fecha.replace('/','-')
+            partes1 = fecha_ini.replace('-','/')
+            """partes1 = fecha_ini.split('-')
+            meses1 = {'01':'Jan','02':'Feb','03':'Mar','04':'Apr','05':'May','06':'Jun','07':'Jul',
+                        '08':'Aug','09':'Sep','10':'Oct','11':'Nov','12':'Dec'}"""
+            #dia1 = int(partes1[2])+1
+            #fechaI = f"{str(dia1)}-{meses1[partes1[1]]}-{partes1[0]}"
+            dataI = partes1
+
+            partes2 = fecha_fine.replace('-','/')
+            """partes2 = fecha_fine.split('-')
+            meses2 = {'01':'Jan','02':'Feb','03':'Mar','04':'Apr','05':'May','06':'Jun','07':'Jul',
+                        '08':'Aug','09':'Sep','10':'Oct','11':'Nov','12':'Dec'}"""
+            #dia2 = int(partes2[2])+2
+            #fechaF = f"{str(dia2)}-{meses2[partes2[1]]}-{partes2[0]}"
+            dataF = partes2
+
+            dataI = datetime.strptime(dataI,'%Y/%m/%d').strftime('%d/%m/%Y')
+            dataF = datetime.strptime(dataF,'%Y/%m/%d').strftime('%d/%m/%Y')
+
+            """lista.append(dataI)
+            lista.append(dataF)
+            return HttpResponse(lista)"""
+            
+            if not dataI or not dataF:
+                return HttpResponse("Mancanno le date")
+            try:
+                client = bigquery.Client()
+                query = f"""SELECT * FROM `{PROJECTO}.{DB}.{TABELA}` WHERE PARSE_DATE('%d/%m/%Y',data) BETWEEN PARSE_DATE('%d/%m/%Y',@dataI) AND PARSE_DATE('%d/%m/%Y',@dataF) LIMIT 100"""
+                #query_job = client.query(query)
+                job_config = bigquery.QueryJobConfig(
+                    query_parameters=[
+                        bigquery.ScalarQueryParameter("dataI", "STRING", dataI),
+                        bigquery.ScalarQueryParameter("dataF", "STRING", dataF),
+                    ]
+                )
+                query_job = client.query(query, job_config=job_config)
+
+                for row in query_job.result():
+                    lista.append(dict(row))
+                
+                
+                #return HttpResponse(lista)
+                #totalePeriodo = calculoTotalePeriodo(lista)
+            except Exception as e:
+                print (f"Errore di conessione {e}")
+    else:
+        formCalendar = CalendarReport()
+        return render(request, 'buscar.html', {'formCalendar': formCalendar})
+
+    return render(request,'infoBD.html',{'lista':lista, 'dataI':dataI, 'dataF':dataF})
+
 # ----------DELETE TABLA -------------------
 def eliminaData(request):
     data = request.GET.get('data')
@@ -436,6 +501,39 @@ def eliminaData(request):
     sql = f"DELETE FROM `{PROJECTO}.{DB}.{TABELA}` WHERE data = '{data}'"
     client.query(sql).result()
     return redirect('/listaBD/')
+
+"""def calculoTotalePeriodo(lista):
+    totaleBottegue = {}
+    data = ""
+    incasso = ""
+    incassoPre = ""
+    diferenza = ""
+    ingressi = ""
+    ingrepre = ""
+    totalMacRoma = {}
+    totalGirRoma = {}
+    totalMacFir = {}
+    totalGirFir = {}
+    totalMacMil = {}
+    totalGirMil = {}
+    totalMacTor = {}
+    totalGirTor = {}
+    totalHamTor = {}
+    totalMacBol = {}
+    totalGirBol = {}
+    totalMacAlb = {}
+    totalGirAlb = {}
+    totalGily = {}
+    totalCotMil = {}
+    for item in lista:
+        totaleBottegue['data'] = item['data']
+        totaleBottegue['bottega'] = item['bottega']
+        totaleBottegue['incasso'] = item['incasso']
+        totaleBottegue['incassoPre'] = item['incassoPre']
+        totaleBottegue['diferenza'] = item['diferenza']
+        totaleBottegue['ingressi'] = item['ingressi']
+        totaleBottegue['ingrepre'] = item['ingrepre']"""
+        
 
 #-------------DOCUMENTO DE MILANO----------------------------
 

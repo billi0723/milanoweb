@@ -35,5 +35,6 @@ urlpatterns = [
     path('lista_reportes/', lista_reportes, name='lista_reportes'),
     path('addPdfDatabase/', addPdfDatabase, name='addPdfDatabase'),
     path('listaBDBottegue/', listaBDBottegue, name='listaBDBottegue'),
+    path('listaInfoBottegue/', listaInfoBottegue, name='listaInfoBottegue'),
     #path('bottegaMilano/', include('bottegaMilano.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

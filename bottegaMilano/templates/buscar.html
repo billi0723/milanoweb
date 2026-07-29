@@ -98,44 +98,44 @@
     </div>
 
     <div style="margin-bottom:20px;border-bottom:1px solid #ccc; padding-bottom:10px; padding-left:200px ; display:flex; align-items:flex-start; flex-direction:row; gap:30px 20px">
-        
-    </div>
-
-    <div style="margin-bottom:24px; border-bottom:1px solid #ccc; padding-left:30px">
-
-        <form method="get" enctype="multipart/form-data" action="../addPdfDatabase/">
+        <form method="post" enctype="multipart/form-data" action="">
             <table style="width:45%">
                 <tr style="font-size:16px; font-family:'Californian FB'">
                     <td>
                         {% csrf_token %}
-
+                        {{ formCalendar.calendario_inizio.label_tag }}
+                        {{ formCalendar.calendario_inizio }}
                     </td>
-                    <td style="padding-left: 150px "><input type="submit" value="Cambiare Data" /></td>
+                    <td>
+                        {% csrf_token %}
+                        {{ formCalendar.calendario_fine.label_tag }}
+                        {{ formCalendar.calendario_fine }}
+                    </td>
+                    <td style="padding-left: 30px "><input type="submit" value="Cercare" /></td>
                 </tr>
             </table>
         </form>
-        <p><strong>Data  </strong>{{dataI}}" - "{{dataF}}</p>
     </div>
+    
+    <div style="margin-bottom:24px; border-bottom:1px solid #ccc; padding-left:30px"><p><strong>  </strong>    </p></div>
     <div style="margin-bottom:20px;border-bottom:1px solid #ccc; padding-left:30px; padding-bottom:10px; display:flex; align-items:flex-start; flex-direction:row; gap:30px 20px">
         <table style="width:auto">
             <tr style="font-size:16px; font-family:'Californian FB'">
-                <td style="padding-right:80px">BOTTEGA</td>
-                <td style="padding-right:20px">TOTALE INCASSI</td>
-                <td style="padding-right:20px">TOTALE PRECEDENTE</td>
-                <td style="padding-right:20px">DIFFERENZA %</td>
-                <td style="padding-right:20px">INGRESSI</td>
-                <td>INGRESSI PRECEDENTE</td>
+                <td style="padding-right:60px"></td>
+                <td style="padding-right:20px"> </td>
+                <td style="padding-right:20px">  </td>
+                <td style="padding-right:20px"> </td>
+                <td> </td>
             </tr>
-            {%for l in lista%}
+            
             <tr style="font-size: 16px; color: darkcyan; font-family: 'Californian FB'">
-                <td align="left">{{l.bottega}}</td>
-                <td align="left">{{l.incasso}}</td>
-                <td align="left">{{l.incassoPre}}</td>
-                <td align="left">{{l.diferenza}}</td>
-                <td align="left">{{l.ingressi}}</td>
-                <td align="left">{{l.ingrepre}}</td>
+                <td align="left"> </td>
+                <td align="left"> </td>
+                <td align="left"> </td>
+                <td align="left"> </td>
+                <td align="left"> </td>
             </tr>
-            {%endfor%}
+            
         </table>
     </div>
 </body>
