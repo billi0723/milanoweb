@@ -551,7 +551,7 @@ def report_macelleria_Milano(request):
     else:
         print("conetto al email ")
 
-    hoy = datetime.date.today()
+    hoy = datetime.today()
     fecha = hoy.strftime('%d-%b-%Y')
     
     status, mensajes = mail.uid('search',None,'FROM','reporting@mercatocentrale.it','ON',fecha)
