@@ -304,14 +304,11 @@ def addInfoPdf(texto,fecha,bottega):
                 numeros = alado
 
             if len(numeros) == 3:
-                t1 = numeros[0].replace('.','')
-                t1 = numeros[0].replace(',','.')
-                t2 = numeros[1].replace('.','')
-                t2 = numeros[1].replace(',','.')
+                t1 = numeros[0].replace('.','').replace(',','.')
+                t2 = numeros[1].replace('.','').replace(',','.')
                 n1 = round(float(t1))
                 n2 = round(float(t2),2)   
-                t3 = numeros[2].replace('.','')
-                t3 = numeros[2].replace(',','.')
+                t3 = numeros[2].replace('.','').replace(',','.')
                 n3 = round(float(t3))
 
                 nn2 = round(n2)
@@ -324,26 +321,27 @@ def addInfoPdf(texto,fecha,bottega):
                     ingPre = n3
                 else:
                     trov = False
-                    contt = 0
-                    while trov == False:
+                    contt = -2
+                    maximo = 10
+                    while trov == False and contt < maximo:
                         pos = len(t2)+contt
-                    objn1 = float(t1[:pos])
-                    objn2 = float(t1[pos:]+t2)
-                    r = round(100 - (objn1*100/n3),2)
-                    if r == objn2:
-                        ingresi = objn1
-                        ip = float(objn2)
-                        ingPer = ip/dec
-                        ingPre = n3
-                        trov = True
+                        if pos >= len(t1):
+                            break
+                        objn1 = float(t1[:pos])
+                        objn2 = float(t1[pos:]+t2)
+                        r = round(100 - (objn1*100/n3),2)
+                        if r == objn2:
+                            ingresi = objn1
+                            ip = float(objn2)
+                            ingPer = ip/dec
+                            ingPre = n3
+                            trov = True
                     else:
                         contt += 1
                     
             elif len(numeros) == 2:
-                t1 = numeros[0].replace('.','')
-                t1 = numeros[0].replace(',','.')
-                t2 = numeros[1].replace('.','')
-                t2 = numeros[1].replace(',','.')
+                t1 = numeros[0].replace('.','').replace(',','.')
+                t2 = numeros[1].replace('.','').replace(',','.')
                 n1 = round(float(t1))
                 n2 = round(float(t2),2)
 
