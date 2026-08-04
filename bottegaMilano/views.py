@@ -306,9 +306,9 @@ def addInfoPdf(texto,fecha,bottega):
             if len(numeros) == 3:
                 t1 = numeros[0].replace('.','').replace(',','.')
                 t2 = numeros[1].replace('.','').replace(',','.')
-                n1 = round(float(t1))
-                n2 = round(float(t2),2)   
                 t3 = numeros[2].replace('.','').replace(',','.')
+                n1 = round(float(t1))
+                n2 = round(float(t2),2)
                 n3 = round(float(t3))
 
                 nn2 = round(n2)
@@ -317,27 +317,31 @@ def addInfoPdf(texto,fecha,bottega):
                 r = round(100 - (n1*100/n3),2)
                 if r == n2:
                     ingresi = n1
-                    ingPer = n2
+                    #ingPer = n2
                     ingPre = n3
-                else:
+                """else:
                     trov = False
-                    contt = -2
+                    contt = 0
                     maximo = 10
                     while trov == False and contt < maximo:
-                        pos = len(t2)+contt
+                        pos = 1+contt
                         if pos >= len(t1):
                             break
                         objn1 = float(t1[:pos])
                         objn2 = float(t1[pos:]+t2)
+                        if(n3==0):
+                            ingPre = 0
+                            trov =True
+                            break
                         r = round(100 - (objn1*100/n3),2)
                         if r == objn2:
                             ingresi = objn1
-                            ip = float(objn2)
-                            ingPer = ip/dec
+                            #ip = float(objn2)
+                            #ingPer = ip/dec
                             ingPre = n3
                             trov = True
                     else:
-                        contt += 1
+                        contt += 1"""
                     
             elif len(numeros) == 2:
                 t1 = numeros[0].replace('.','').replace(',','.')
@@ -348,7 +352,7 @@ def addInfoPdf(texto,fecha,bottega):
                 if n2 == 0:
                     if '0.' in t1:
                         ingresi = t1[:t1.find('0.')]
-                        ingPer = t1[t1.find('0.'):]
+                        #ingPer = t1[t1.find('0.'):]
                         ingPre = 0
                 elif n1 > n2:
                     trova = False
@@ -360,7 +364,7 @@ def addInfoPdf(texto,fecha,bottega):
                         r = round(100 - (ob1*100/n2),2)*-1
                         if r == ob2:
                             ingresi = ob1
-                            ingPer = ob2
+                            #ingPer = ob2
                             ingPre = n2
                             trova = True
                         else:
