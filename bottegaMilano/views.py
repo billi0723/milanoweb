@@ -311,9 +311,13 @@ def addInfoPdf(texto,fecha,bottega):
                 n2 = round(float(t2),2)
                 n3 = round(float(t3))
 
-                nn2 = round(n2)
+                """nn2 = round(n2)
                 for i in range(len(str(nn2))):
-                    dec = dec*10
+                    dec = dec*10"""
+                if(n3==0):
+                    ingPre = 0
+                    ingresi = 0
+                    break
                 r = round(100 - (n1*100/n3),2)
                 if r == n2:
                     ingresi = n1
