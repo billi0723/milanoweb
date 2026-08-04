@@ -309,43 +309,42 @@ def addInfoPdf(texto,fecha,bottega):
                 t3 = numeros[2].replace('.','').replace(',','.')
                 n1 = round(float(t1))
                 n2 = round(float(t2),2)
-                n3 = round(float(t3))
-
+                n3 = round(float(t3))                
+                
                 """nn2 = round(n2)
                 for i in range(len(str(nn2))):
                     dec = dec*10"""
                 if(n3==0):
                     ingPre = 0
-                    ingresi = 0
-                    break
-                r = round(100 - (n1*100/n3),2)
-                if r == n2:
-                    ingresi = n1
-                    #ingPer = n2
-                    ingPre = n3
-                """else:
-                    trov = False
-                    contt = 0
-                    maximo = 10
-                    while trov == False and contt < maximo:
-                        pos = 1+contt
-                        if pos >= len(t1):
-                            break
-                        objn1 = float(t1[:pos])
-                        objn2 = float(t1[pos:]+t2)
-                        if(n3==0):
-                            ingPre = 0
-                            trov =True
-                            break
-                        r = round(100 - (objn1*100/n3),2)
-                        if r == objn2:
-                            ingresi = objn1
-                            #ip = float(objn2)
-                            #ingPer = ip/dec
-                            ingPre = n3
-                            trov = True
+                    if '0.' in t1:
+                        ingresi = t1[:t1.find('0.')]
+                        break
+                else:
+                    r = round(100 - (n1*100/n3),2)
+                    if r == n2:
+                        ingresi = n1
+                        #ingPer = n2
+                        ingPre = n3
                     else:
-                        contt += 1"""
+                       trov = False
+                       contt = 0
+                       maximo = 10
+                       while trov == False and contt < maximo:
+                           pos = 1+contt
+                           if pos >= len(t1):
+                               break
+                           objn1 = float(t1[:pos])
+                           objn2 = float(t1[pos:]+t2)
+                       
+                           r = round(100 - (objn1*100/n3),2)
+                           if r == objn2:
+                               ingresi = objn1
+                               #ip = float(objn2)
+                               #ingPer = ip/dec
+                               ingPre = n3
+                               trov = True
+                           else:
+                               contt += 1
                     
             elif len(numeros) == 2:
                 t1 = numeros[0].replace('.','').replace(',','.')
@@ -442,7 +441,7 @@ def listaInfoBottegue(request):
         if formCalendar.is_valid():
             fecha_ini = request.POST.get('calendario_inizio')
             fecha_fine = request.POST.get('calendario_fine')
-            lista = []
+            listadb = []
             totalePeriodo = {}
             #return HttpResponse(fecha_ini+fecha_fine)        
             
@@ -475,7 +474,7 @@ def listaInfoBottegue(request):
                 return HttpResponse("Mancanno le date")
             try:
                 client = bigquery.Client()
-                query = f"""SELECT * FROM `{PROJECTO}.{DB}.{TABELA}` WHERE PARSE_DATE('%d/%m/%Y',data) BETWEEN PARSE_DATE('%d/%m/%Y',@dataI) AND PARSE_DATE('%d/%m/%Y',@dataF) LIMIT 100"""
+                query = f"""SELECT * FROM `{PROJECTO}.{DB}.{TABELA}` WHERE PARSE_DATE('%d/%m/%Y',data) BETWEEN PARSE_DATE('%d/%m/%Y',@dataI) AND PARSE_DATE('%d/%m/%Y',@dataF) LIMIT 300"""
                 #query_job = client.query(query)
                 job_config = bigquery.QueryJobConfig(
                     query_parameters=[
@@ -486,7 +485,7 @@ def listaInfoBottegue(request):
                 query_job = client.query(query, job_config=job_config)
 
                 for row in query_job.result():
-                    lista.append(dict(row))
+                    listadb.append(dict(row))
                 
                 
                 #return HttpResponse(lista)
@@ -497,7 +496,7 @@ def listaInfoBottegue(request):
         formCalendar = CalendarReport()
         return render(request, 'buscar.html', {'formCalendar': formCalendar})
 
-    return render(request,'infoBD.html',{'lista':lista, 'dataI':dataI, 'dataF':dataF})
+    return render(request,'infoBD.html',{'lista':listadb, 'dataI':dataI, 'dataF':dataF})
 
 # ----------DELETE TABLA -------------------
 def eliminaData(request):
